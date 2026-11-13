@@ -1,0 +1,65 @@
+# ============================================================
+#  WEALTH FACTORY - settings
+#  You normally never need to touch this file.
+#  To change something, just ask Claude.
+# ============================================================
+
+channel:
+  name: "Wealth Factory"
+  # What the channel is about. Every video is written from this.
+  niche: >
+    Real money stories: true, well-documented stories of people and companies
+    who won or lost big with money - the one decision, mistake, habit or idea
+    that changed everything - told as a gripping story with a lesson at the end.
+    Include stories from Africa (especially East Africa and Rwanda) as often as
+    stories from the rest of the world.
+  audience: "Young people (18-35) who want to understand money and build a better life."
+  language: "English"
+  # Safety rules the writer must always follow.
+  rules:
+    - "Tell real, widely documented stories only. Never invent people, companies, quotes or numbers."
+    - "If you are not sure about an exact number or date, describe it without the number."
+    - "Never give personal financial or investment advice. Teach through the story only."
+    - "No get-rich-quick promises, no gambling, no crypto pumping, no scams."
+    - "Tension and curiosity are good. Gore, panic, fear-mongering and shocking imagery are not."
+
+video:
+  target_seconds: 72        # 65-80s keeps TikTok rewards eligibility (needs 60s+)
+  images: 15                # number of AI images per video
+  width: 1080
+  height: 1920
+  fps: 30
+
+voice:
+  main: "en-US-AndrewNeural"      # deep, warm storyteller (free Microsoft neural voice)
+  backup: "en-US-BrianNeural"
+  rate: "+6%"                     # a little faster than normal = better retention
+
+posting:
+  platforms: ["tiktok", "instagram", "youtube"]
+  youtube_category: "27"          # 27 = Education
+  hashtags_max: 5
+
+telegram:
+  chat_id: "-1003707850121"       # your "Shorts_Media_Vault" channel
+
+# Formats rotate so the channel never looks mass-produced.
+formats:
+  - name: "The one decision"
+    brief: "One single decision that made or destroyed a fortune. Build up to the moment of the decision, then reveal what happened."
+  - name: "Rise and fall"
+    brief: "Someone who rose very high and then lost almost everything. Show the warning signs everyone ignored."
+  - name: "From nothing"
+    brief: "Someone who started with almost nothing. Focus on the specific, surprising thing they did differently."
+  - name: "The hidden cost"
+    brief: "A common money habit or belief, shown through a real story, that quietly costs people a fortune."
+  - name: "Myth vs truth"
+    brief: "A famous money story everyone tells wrong. Tell the common version, then the real, documented version."
+  - name: "African empire"
+    brief: "A real African entrepreneur, company or market story - how it was built, the risk taken, the lesson."
+
+visual_styles:
+  - "cinematic photo, dramatic side lighting, shallow depth of field, rich film colors"
+  - "moody documentary photograph, natural light, 35mm film grain"
+  - "cinematic illustration, painterly, bold contrast, golden hour light"
+  - "dark editorial photo, high contrast, single warm light source"

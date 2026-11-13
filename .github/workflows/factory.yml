@@ -1,0 +1,72 @@
+name: Wealth Factory
+
+on:
+  schedule:
+    # Times are UTC. 06:17 UTC = 08:17 Kigali, 16:17 UTC = 18:17 Kigali.
+    - cron: "17 6 * * *"
+    - cron: "17 16 * * *"
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "Post to TikTok, Instagram and YouTube? (leave unticked for a test - video goes only to Telegram)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wealth-factory
+  cancel-in-progress: false
+
+jobs:
+  make-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core > /dev/null
+          pip install -q -r requirements.txt
+          mkdir -p work/fonts
+          curl -fsSL -o work/fonts/Anton-Regular.ttf \
+            https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf || echo "Font download failed - using backup font"
+
+      - name: Make and post the video
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          POST_TO_SOCIALS: ${{ github.event_name == 'schedule' && 'true' || inputs.post }}
+        run: python -m factory.main
+
+      - name: Save what was posted (so topics never repeat)
+        if: always()
+        run: |
+          if git diff --quiet -- data/history.json; then exit 0; fi
+          git config user.name "wealth-factory-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/history.json
+          git commit -q -m "history: $(date -u +%Y-%m-%dT%H:%M)"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+
+      - name: Keep a copy of the video for 7 days
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-${{ github.run_id }}
+          path: |
+            work/*/final.mp4
+            work/*/story.json
+          retention-days: 7
+          if-no-files-found: ignore
