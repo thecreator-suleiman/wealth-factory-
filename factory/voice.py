@@ -54,8 +54,26 @@ def _estimate_timings(text: str, total: float) -> list[tuple[float, float, str]]
     return out
 
 
+SAY = {"Monezic": "Money-zick", "monezic": "Money-zick", "MONEZIC": "Money-zick"}
+
+
+def _fix_names(words: list) -> list:
+    """Show the real spelling in captions even though the voice reads a phonetic version."""
+    out = []
+    for a, b, w in words:
+        if out and w.lower().strip(".,!?") in ("zick", "-zick") and out[-1][2].lower().startswith("money"):
+            out[-1] = (out[-1][0], b, "MONEZIC" + w[len(w.rstrip(".,!?")):])
+            continue
+        if w.lower().startswith("money-zick"):
+            w = "MONEZIC" + w[len("money-zick"):]
+        out.append((a, b, w))
+    return out
+
+
 def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
     folder.mkdir(parents=True, exist_ok=True)
+    for k, v in SAY.items():
+        text = text.replace(k, v)
     out = folder / "voice.mp3"
     v = cfg["voice"]
     for voice in (v["main"], v["backup"]):
@@ -67,7 +85,7 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
                     log("Word timings missing - estimating captions instead.")
                     words = _estimate_timings(text, total)
                 log(f"Voice ready: {voice}, {total:.1f}s, {len(words)} timed words")
-                return out, words, voice
+                return out, _fix_names(words), voice
             except Exception as e:  # noqa: BLE001
                 log(f"Voice {voice} failed (try {attempt + 1}): {e}")
     # Emergency backup

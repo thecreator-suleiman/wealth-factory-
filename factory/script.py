@@ -93,8 +93,9 @@ Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds
 4. THE TWIST (1-2 beats): "But here's the part nobody's talking about..." - the hidden angle.
 5. HISTORY RHYMES (1-2 beats): a real past event that looks similar, and how it played out.
 6. SO WHAT (1 beat): what this means for normal people - no advice, just what to watch.
-7. CLOSE (last beat): one sharp line, then a casual call to action, e.g. "Hit subscribe so you're not the last
-   one to find out." or "Follow {handle} - the next one's even crazier." Vary it every time.
+7. CLOSE (last beat): ask the viewer ONE direct question they will want to answer in the comments
+   (e.g. "Would you have sold? Tell me in the comments."), then a short call to follow, e.g.
+   "And follow for more." Vary the wording every time. Do not say the channel name.
 Short punchy sentences. Sound like a person, not a news anchor.
 
 FOR EACH BEAT'S SCENE:
@@ -221,6 +222,13 @@ def _problems(story: dict, cfg: dict) -> list[str]:
         issues.append(f"The beats have {words} spoken words in total; they must have at most {hi}. Make it shorter.")
     if len(story["beats"]) < 8:
         issues.append("Write 10-14 beats.")
+    else:
+        first = story["beats"][0]["text"].lower()
+        if not (re.search(r"\byou|\byour", first) or "?" in first or "nobody" in first or "strange" in first):
+            issues.append('Beat 1 is not a hook. It must speak to the viewer ("you"/"your") or open a mystery, '
+                          'e.g. "Something strange is happening to your paycheck." Rewrite beat 1.')
+        if "?" not in story["beats"][-1]["text"]:
+            issues.append("The last beat must ask the viewer a question to answer in the comments.")
     return issues
 
 
