@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "date": "2026-11-14T10:26+00:00",
+    "topic": "Ronald Wayne Apple exit",
+    "title": "The $300 BILLION mistake made in 12 days",
+    "format": "The one decision",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "seconds": 63.7,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261114-1026.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=OVwDxmYy_uc",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7707973351838436609",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DfuADNOAmHr/",
+        "error": ""
+      }
+    }
+  }
+]
