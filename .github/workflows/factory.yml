@@ -2,11 +2,12 @@ name: Wealth Factory
 
 on:
   schedule:
-    # Times are UTC. Each run takes about 8 minutes, so it starts a little early:
+    # Times are UTC. GitHub often starts scheduled runs 20-40 min late and a run
+    # takes ~10 min, so they are set 40 min early:
     # 09:50 UTC -> posted about 12:00 Kigali (11:00 Europe, 06:00 New York)
     # 21:50 UTC -> posted about 00:00 Kigali (23:00 Europe, 17:00 New York)
-    - cron: "50 9 * * *"
-    - cron: "50 21 * * *"
+    - cron: "20 9 * * *"
+    - cron: "20 21 * * *"
   workflow_dispatch:
     inputs:
       post:
