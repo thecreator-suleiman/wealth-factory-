@@ -48,6 +48,8 @@ jobs:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POST_TO_SOCIALS: ${{ github.event_name == 'schedule' && 'true' || inputs.post }}
         run: python -m factory.main

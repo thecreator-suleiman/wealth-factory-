@@ -68,3 +68,44 @@ def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
     if run_url:
         lines += ["", f'<a href="{e(run_url)}">Details</a>']
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- WhatsApp (CallMeBot, free)
+def send_whatsapp(text: str) -> None:
+    """Sends a WhatsApp message to your own phone. Skipped quietly if not set up."""
+    phone = env("WHATSAPP_PHONE", required=False).replace(" ", "")
+    key = env("CALLMEBOT_API_KEY", required=False)
+    if not phone or not key:
+        return
+    try:
+        r = requests.get(
+            "https://api.callmebot.com/whatsapp.php",
+            params={"phone": phone, "apikey": key, "text": text[:1500]},
+            timeout=60,
+        )
+        if r.status_code != 200 or "ERROR" in r.text.upper()[:300]:
+            log(f"WhatsApp message failed: {r.status_code} {r.text[:200]}")
+        else:
+            log("WhatsApp message sent.")
+    except Exception as e:  # noqa: BLE001
+        log(f"WhatsApp message failed: {e}")
+
+
+def whatsapp_report(story: dict, results: dict | None) -> str:
+    icons = {"youtube": "▶️ YouTube", "tiktok": "🎵 TikTok", "instagram": "📸 Instagram"}
+    lines = [f"*Monezic* - new video", f"_{story['title']}_", ""]
+    if results is None:
+        lines.append("🧪 Test video (not posted). Check Telegram to watch it.")
+    else:
+        for platform in ("youtube", "tiktok", "instagram"):
+            if platform not in results:
+                continue
+            r = results[platform]
+            name = icons[platform]
+            if r["ok"]:
+                lines.append(f"✅ {name}: {r.get('link') or 'posted'}")
+            elif r["ok"] is None:
+                lines.append(f"⏳ {name}: still processing")
+            else:
+                lines.append(f"❌ {name}: {r['error']}")
+    return "\n".join(lines)

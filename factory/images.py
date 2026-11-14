@@ -1,12 +1,11 @@
 """Step 3: create one vertical image per story moment with Pollinations (free)."""
-import random
 import time
 import urllib.parse
 from io import BytesIO
 from pathlib import Path
 
 import requests
-from PIL import Image, ImageDraw
+from PIL import Image
 
 from .common import env, log
 
@@ -42,15 +41,7 @@ def _fetch(prompt: str, seed: int, w: int, h: int, key: str) -> Image.Image:
 
 
 def _placeholder(w: int, h: int, seed: int) -> Image.Image:
-    rnd = random.Random(seed)
-    top = tuple(rnd.randint(10, 60) for _ in range(3))
-    bottom = tuple(rnd.randint(60, 140) for _ in range(3))
-    img = Image.new("RGB", (w, h))
-    d = ImageDraw.Draw(img)
-    for y in range(h):
-        k = y / h
-        d.line([(0, y), (w, y)], fill=tuple(int(a + (b - a) * k) for a, b in zip(top, bottom)))
-    return img
+    return Image.new("RGB", (w, h), (255, 255, 255))
 
 
 def make_images(cfg: dict, prompts: list[str], folder: Path, base_seed: int) -> list[Path]:

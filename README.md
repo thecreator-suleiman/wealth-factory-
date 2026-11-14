@@ -3,8 +3,9 @@
 This makes **2 short videos every day, by itself**, and posts each one to
 **TikTok, Instagram Reels and YouTube Shorts**. It costs $0.
 
-Every video is a 65–80 second true money story with a strong hook, a natural AI
-voice, 15 cinematic AI images, moving camera, big captions and a progress bar.
+Every video is a 65–80 second true money story told with stickman drawings
+(black figures on white, green highlights), a calm storyteller voice, soft original
+piano music, big captions and a progress bar.
 
 **Your only job:** read the message in your Telegram channel after each video.
 - ✅ = posted (tap "open" to see it)
@@ -28,6 +29,12 @@ Add these **exactly** with these names (capital letters, underscores):
 | `GEMINI_API_KEY` | your key from aistudio.google.com/apikey |
 | `BUFFER_API_KEY` | your key from publish.buffer.com/settings/api |
 | `TELEGRAM_BOT_TOKEN` | your new bot token from BotFather |
+
+Optional - WhatsApp alerts with the YouTube link:
+1. Save **+34 684 78 37 08** in your phone contacts (CallMeBot).
+2. Send it this WhatsApp message: `I allow callmebot to send me messages`
+3. It replies with your API key. Add two secrets: `WHATSAPP_PHONE` (your number with
+   country code, e.g. `+2507xxxxxxxx`) and `CALLMEBOT_API_KEY` (the key it sent you).
 
 Optional: `POLLINATIONS_API_KEY` (free from enter.pollinations.ai) makes images
 faster and removes any watermark. Without it the system still works.

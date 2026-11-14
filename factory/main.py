@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from .common import DATA, WORK, load_config, log, read_json, write_json
 from .images import make_images
-from .notify import report, send_text, send_video
+from .notify import report, send_text, send_video, send_whatsapp, whatsapp_report
 from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_story
 from .video import build_video
@@ -40,8 +40,8 @@ def run() -> int:
     try:
         fmt = cfg["formats"][len(history) % len(cfg["formats"])]
         rnd = random.Random(run_id)
-        style = rnd.choice(cfg["visual_styles"])
-        log(f"Format: {fmt['name']} | Style: {style}")
+        style = " ".join(cfg["visual_style"].split())
+        log(f"Format: {fmt['name']}")
 
         step = "writing the story"
         story = write_story(cfg, fmt, style, [h["topic"] for h in history])
@@ -52,7 +52,8 @@ def run() -> int:
         total = audio_seconds(voice)
 
         step = "creating the images"
-        images = make_images(cfg, story["image_prompts"], folder / "images", rnd.randint(1, 10**6))
+        images = make_images(cfg, [f"{p}. {style}" for p in story["image_prompts"]],
+                             folder / "images", rnd.randint(1, 10**6))
 
         step = "building the video"
         video = build_video(cfg, images, voice, words, story["hook_text"], total, folder)
@@ -70,6 +71,7 @@ def run() -> int:
         step = "sending the Telegram report"
         send_video(cfg, video, f"<b>{html.escape(story['title'])}</b>")
         delivered = send_text(cfg, report(cfg, story, results, run_url))
+        send_whatsapp(whatsapp_report(story, results))
 
         if results is not None:
             history.append({
@@ -100,6 +102,7 @@ def run() -> int:
             msg += f'\n\n<a href="{html.escape(run_url)}">Details</a>'
         try:
             send_text(cfg, msg)
+            send_whatsapp(f"❌ Monezic problem while {step}: {str(e)[:300]}")
         except Exception:  # noqa: BLE001
             pass
         return 1

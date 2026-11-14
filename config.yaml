@@ -31,9 +31,14 @@ video:
   fps: 30
 
 voice:
-  main: "en-US-AndrewNeural"      # deep, warm storyteller (free Microsoft neural voice)
-  backup: "en-US-BrianNeural"
-  rate: "+6%"                     # a little faster than normal = better retention
+  main: "en-US-AndrewMultilingualNeural"   # calm, natural storyteller (free Microsoft neural voice)
+  backup: "en-US-AndrewNeural"
+  rate: "-2%"                     # calm storytelling pace
+  pitch: "-2Hz"                   # a little deeper
+
+music:
+  folder: "assets/music"          # original piano tracks made by tools/make_music.py
+  volume_db: -17                  # background level under the voice
 
 posting:
   platforms: ["tiktok", "instagram", "youtube"]
@@ -42,6 +47,9 @@ posting:
 
 telegram:
   chat_id: "-1003707850121"       # your "Shorts_Media_Vault" channel
+
+# WhatsApp alert with the YouTube link (free CallMeBot service).
+# Needs 2 GitHub secrets: WHATSAPP_PHONE and CALLMEBOT_API_KEY. Skipped if missing.
 
 # Formats rotate so the channel never looks mass-produced.
 formats:
@@ -58,8 +66,10 @@ formats:
   - name: "African empire"
     brief: "A real African entrepreneur, company or market story - how it was built, the risk taken, the lesson."
 
-visual_styles:
-  - "cinematic photo, dramatic side lighting, shallow depth of field, rich film colors"
-  - "moody documentary photograph, natural light, 35mm film grain"
-  - "cinematic illustration, painterly, bold contrast, golden hour light"
-  - "dark editorial photo, high contrast, single warm light source"
+# One consistent look for every video: stickman storytelling.
+visual_style: >
+  minimalist hand-drawn stick figure illustration, black stick figures with round heads
+  and simple dot eyes, thick clean black ink lines, pure white background, flat 2D,
+  whiteboard explainer style, only a few bright green accent elements (money, arrows,
+  charts, highlights), lots of empty white space, centered composition,
+  no text, no letters, no numbers, no words, no shading, no realistic people

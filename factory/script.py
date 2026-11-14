@@ -39,8 +39,8 @@ LABELS = re.compile(
 
 def _prompt(cfg: dict, fmt: dict, style: str, used_topics: list[str], feedback: str) -> str:
     ch, vid = cfg["channel"], cfg["video"]
-    words_lo = int(vid["target_seconds"] * 2.6)
-    words_hi = int(vid["target_seconds"] * 2.9)
+    words_lo = int(vid["target_seconds"] * 2.4)
+    words_hi = int(vid["target_seconds"] * 2.7)
     n = vid["images"]
     avoid = "\n".join(f"- {t}" for t in used_topics[-80:]) or "- (none yet)"
     rules = "\n".join(f"- {r}" for r in ch["rules"])
@@ -70,7 +70,7 @@ ALSO RETURN:
 - "topic": the story subject in under 8 words (used to avoid repeats).
 - "title": a YouTube Shorts title under 70 characters. Curiosity-driven but honest. No ALL CAPS words except one.
 - "hook_text": 3-6 words shown big on screen in the first 2 seconds.
-- "image_prompts": exactly {n} image descriptions, in story order, one per moment of the script. Each is self-contained (repeat who/where), vertical composition, NO text, NO logos, NO real famous faces (show silhouettes, hands, places, objects instead). Style for all of them: {style}.
+- "image_prompts": exactly {n} scene descriptions for a STICKMAN whiteboard animation, in story order, one per moment of the script, showing exactly what the narrator is saying at that moment. Each scene: 1-3 stick figures doing one clear action with 1-3 simple objects (e.g. "a stick figure man hands a big green bag of money to another stick figure who looks shocked", "a stick figure stands on top of a tall green bar chart", "a sad stick figure sits on the ground next to a broken green piggy bank"). Say which things are green (money, arrows, charts, the key object). Simple and readable on a phone. Do not mention any art style, colors of the background, text or numbers - the style is added automatically.
 - "caption": 1-2 short sentences for the post + a question that invites comments.
 - "hashtags": 3-5 relevant hashtags without the # sign, lowercase.
 {feedback}"""
@@ -120,8 +120,8 @@ def _clean(story: dict, n_images: int) -> dict:
 
 def _problems(story: dict, cfg: dict) -> list[str]:
     words = len(story["script"].split())
-    lo = int(cfg["video"]["target_seconds"] * 2.5)
-    hi = int(cfg["video"]["target_seconds"] * 3.1)
+    lo = int(cfg["video"]["target_seconds"] * 2.3)
+    hi = int(cfg["video"]["target_seconds"] * 2.9)
     issues = []
     if words < lo:
         issues.append(f"The script has only {words} words; it must have at least {lo}.")

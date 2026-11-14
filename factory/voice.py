@@ -20,13 +20,13 @@ def audio_seconds(path: Path) -> float:
     return float(out)
 
 
-async def _edge(text: str, voice: str, rate: str, out: Path) -> list[tuple[float, float, str]]:
+async def _edge(text: str, voice: str, rate: str, out: Path, pitch: str = "+0Hz") -> list[tuple[float, float, str]]:
     import edge_tts
 
     try:
-        com = edge_tts.Communicate(text, voice, rate=rate, boundary="WordBoundary")
+        com = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, boundary="WordBoundary")
     except TypeError:  # older edge-tts sends word boundaries by default
-        com = edge_tts.Communicate(text, voice, rate=rate)
+        com = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
     words = []
     with open(out, "wb") as f:
         async for chunk in com.stream():
@@ -61,7 +61,7 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
     for voice in (v["main"], v["backup"]):
         for attempt in range(2):
             try:
-                words = asyncio.run(_edge(text, voice, v["rate"], out))
+                words = asyncio.run(_edge(text, voice, v["rate"], out, v.get("pitch", "+0Hz")))
                 total = audio_seconds(out)
                 if len(words) < len(text.split()) * 0.5:
                     log("Word timings missing - estimating captions instead.")
