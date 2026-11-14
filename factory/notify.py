@@ -99,7 +99,7 @@ def send_whatsapp(text: str) -> None:
 
 def whatsapp_report(story: dict, results: dict | None) -> str:
     icons = {"youtube": "▶️ YouTube", "tiktok": "🎵 TikTok", "instagram": "📸 Instagram"}
-    lines = [f"*Monezic* - new video", f"_{story['title']}_", ""]
+    lines = ["*Monezic* - new video", f"_{story['title']}_", ""]
     if results is None:
         lines.append("🧪 Test video (not posted). Check Telegram to watch it.")
     else:

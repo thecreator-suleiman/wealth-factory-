@@ -36,12 +36,9 @@ Optional - WhatsApp alerts with the YouTube link:
 3. It replies with your API key. Add two secrets: `WHATSAPP_PHONE` (your number with
    country code, e.g. `+2507xxxxxxxx`) and `CALLMEBOT_API_KEY` (the key it sent you).
 
-Optional: `POLLINATIONS_API_KEY` (free from enter.pollinations.ai) makes images
-faster and removes any watermark. Without it the system still works.
-
 ### 2. Run a test
 **Actions → Wealth Factory → Run workflow → Run workflow** (leave the box unticked).
-After about 10 minutes, a test video arrives in your Telegram channel.
+After about 5 minutes, a test video arrives in your Telegram channel.
 Nothing is posted to social media in a test.
 
 ### 3. Go live

@@ -6,6 +6,7 @@
 
 channel:
   name: "Monezic"
+  handle: "@monezic"
   # What the channel is about. Every video is written from this.
   niche: >
     Real money stories: true, well-documented stories of people and companies
@@ -24,8 +25,7 @@ channel:
     - "Tension and curiosity are good. Gore, panic, fear-mongering and shocking imagery are not."
 
 video:
-  target_seconds: 75        # 65-80s keeps TikTok rewards eligibility (needs 60s+)
-  images: 15                # number of AI images per video
+  target_seconds: 70        # 61-80s keeps TikTok rewards eligibility (needs 60s+)
   width: 1080
   height: 1920
   fps: 30
@@ -33,7 +33,7 @@ video:
 voice:
   main: "en-US-AndrewMultilingualNeural"   # calm, natural storyteller (free Microsoft neural voice)
   backup: "en-US-AndrewNeural"
-  rate: "-2%"                     # calm storytelling pace
+  rate: "+4%"                     # calm but not slow
   pitch: "-2Hz"                   # a little deeper
 
 music:
@@ -65,11 +65,3 @@ formats:
     brief: "A famous money story everyone tells wrong. Tell the common version, then the real, documented version."
   - name: "African empire"
     brief: "A real African entrepreneur, company or market story - how it was built, the risk taken, the lesson."
-
-# One consistent look for every video: stickman storytelling.
-visual_style: >
-  minimalist hand-drawn stick figure illustration, black stick figures with round heads
-  and simple dot eyes, thick clean black ink lines, pure white background, flat 2D,
-  whiteboard explainer style, only a few bright green accent elements (money, arrows,
-  charts, highlights), lots of empty white space, centered composition,
-  no text, no letters, no numbers, no words, no shading, no realistic people

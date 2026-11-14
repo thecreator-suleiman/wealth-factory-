@@ -4,21 +4,33 @@ Run by GitHub Actions twice a day (see .github/workflows/factory.yml).
 """
 import html
 import os
-import random
 import shutil
 import sys
 import traceback
 from datetime import datetime, timezone
 
 from .common import DATA, WORK, load_config, log, read_json, write_json
-from .images import make_images
 from .notify import report, send_text, send_video, send_whatsapp, whatsapp_report
 from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_story
-from .video import build_video
-from .voice import audio_seconds, make_voice
+from . import stickman
+from .video import FONT_DIR, finish_video
+from .voice import fit_length, make_voice
 
 HISTORY = DATA / "history.json"
+
+
+def beat_times(beats: list[dict], words: list, total: float) -> list[tuple[float, float]]:
+    """When each scene starts and ends, following the spoken words."""
+    counts = [len(b["text"].split()) for b in beats]
+    n_script = sum(counts)
+    starts, k = [], 0
+    for c in counts:
+        idx = min(round(k * len(words) / n_script), len(words) - 1)
+        starts.append(0.0 if not starts else max(words[idx][0] - 0.15, starts[-1] + 0.5))
+        k += c
+    ends = starts[1:] + [total]
+    return list(zip(starts, ends))
 
 
 def run() -> int:
@@ -39,8 +51,7 @@ def run() -> int:
     step = "starting"
     try:
         fmt = cfg["formats"][len(history) % len(cfg["formats"])]
-        rnd = random.Random(run_id)
-        style = " ".join(cfg["visual_style"].split())
+        style = ""
         log(f"Format: {fmt['name']}")
 
         step = "writing the story"
@@ -49,14 +60,17 @@ def run() -> int:
 
         step = "recording the voice"
         voice, words, voice_name = make_voice(cfg, story["script"], folder)
-        total = audio_seconds(voice)
+        voice, words, total = fit_length(voice, words)
 
-        step = "creating the images"
-        images = make_images(cfg, [f"{p}. {style}" for p in story["image_prompts"]],
-                             folder / "images", rnd.randint(1, 10**6))
+        step = "drawing the stickman scenes"
+        stickman.set_font("Anton" if (FONT_DIR / "Anton-Regular.ttf").exists() else "DejaVu Sans")
+        times = beat_times(story["beats"], words, total)
+        end_card = 3.0
+        scenes = stickman.render(story["beats"], times, end_card, folder / "scenes.mp4",
+                                 fps=cfg["video"]["fps"], handle=cfg["channel"].get("handle", "@monezic"))
 
         step = "building the video"
-        video = build_video(cfg, images, voice, words, story["hook_text"], total, folder)
+        video = finish_video(cfg, scenes, voice, words, story["hook_text"], total, total + end_card, folder)
 
         results = None
         video_url = ""

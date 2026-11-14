@@ -83,3 +83,19 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
     )
     total = audio_seconds(out)
     return out, _estimate_timings(text, total), "gTTS backup"
+
+
+def fit_length(voice: Path, words: list, lo: float = 61.0, hi: float = 80.0):
+    """Gently speed up / slow down the voice so the video lands between lo and hi seconds.
+    (TikTok pays only for 60s+, and shorter keeps viewers watching.)"""
+    total = audio_seconds(voice)
+    if lo <= total <= hi:
+        return voice, words, total
+    target = hi - 4 if total > hi else lo + 2
+    factor = min(max(total / target, 0.88), 1.25)
+    out = voice.with_name("voice_fit.mp3")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(voice),
+                    "-filter:a", f"atempo={factor:.4f}", str(out)], check=True)
+    new_total = audio_seconds(out)
+    log(f"Voice adjusted from {total:.1f}s to {new_total:.1f}s (x{factor:.2f})")
+    return out, [(a / factor, b / factor, w) for a, b, w in words], new_total

@@ -91,32 +91,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 
 
-MOTIONS = [
-    ("min(1+0.0007*on,1.10)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),   # gentle zoom in
-    ("max(1.10-0.0007*on,1.0)", "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"),  # gentle zoom out
-    ("1.08", "(iw-iw/zoom)*on/{d}", "ih/2-(ih/zoom/2)"),                 # slow slide
-]
-
-
-def _clip(img: Path, out: Path, seconds: float, motion: int, w: int, h: int, fps: int) -> None:
-    """One scene: the drawing is 'revealed' left-to-right like a whiteboard, then drifts gently."""
-    frames = max(int(seconds * fps), fps)
-    z, x, y = MOTIONS[motion % len(MOTIONS)]
-    x, y = x.format(d=frames), y.format(d=frames)
-    graph = (
-        f"[0:v]scale={w * 2}:{h * 2}:flags=lanczos,"
-        f"zoompan=z='{z}':x='{x}':y='{y}':d={frames}:s={w}x{h}:fps={fps},setsar=1[base];"
-        f"color=c=white:s={w}x{h}:r={fps}:d={seconds:.3f}[cover];"
-        f"[base][cover]overlay=x='w*min(t/0.45\\,1)':y=0:shortest=1,format=yuv420p[v]"
-    )
-    subprocess.run(
-        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(img), "-filter_complex", graph,
-         "-map", "[v]", "-frames:v", str(frames), "-c:v", "libx264", "-preset", "veryfast",
-         "-crf", "18", "-r", str(fps), str(out)],
-        check=True,
-    )
-
-
 def _pick_music(cfg: dict, seed: str) -> Path | None:
     folder = ROOT / cfg.get("music", {}).get("folder", "assets/music")
     tracks = sorted(folder.glob("*.mp3"))
@@ -125,65 +99,46 @@ def _pick_music(cfg: dict, seed: str) -> Path | None:
     return random.Random(seed).choice(tracks)
 
 
-def build_video(cfg: dict, images: list[Path], voice: Path, words: list, hook: str,
-                total: float, folder: Path) -> Path:
+def finish_video(cfg: dict, scenes_video: Path, voice: Path, words: list, hook: str,
+                 total: float, length: float, folder: Path) -> Path:
+    """Adds captions, progress bar, voice and piano to the drawn stickman video."""
     v = cfg["video"]
     w, h, fps = v["width"], v["height"], v["fps"]
-    tail = 1.2
-    length = total + tail
-    per = length / len(images)
-    log(f"Rendering {len(images)} scenes, {length:.1f}s total")
-    clips = []
-    for i, img in enumerate(images):
-        out = folder / f"clip_{i:02d}.mp4"
-        _clip(img, out, per + (0.2 if i == len(images) - 1 else 0), i, w, h, fps)
-        clips.append(out)
-    listing = folder / "clips.txt"
-    listing.write_text("".join(f"file '{c.name}'\n" for c in clips), encoding="utf-8")
-    joined = folder / "joined.mp4"
-    subprocess.run(
-        ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
-         "-i", str(listing), "-c", "copy", str(joined)],
-        check=True, cwd=folder,
-    )
     ass = folder / "captions.ass"
     write_captions(words, hook, total, ass, w, h)
     final = folder / "final.mp4"
     fonts = FONT_DIR if FONT_DIR.exists() else folder
-
     music = _pick_music(cfg, folder.name)
-    inputs = ["-i", str(joined), "-i", str(voice)]
+    inputs = ["-i", str(scenes_video), "-i", str(voice)]
     video_graph = (
         f"[0:v]ass='{ass.name}':fontsdir='{fonts}'[cap];"
         f"color=c={GREEN_HEX}:s={w}x14:r={fps}[bar];"
-        f"[cap][bar]overlay=x='-w+w*t/{length:.2f}':y=0:shortest=1[v]"
+        f"[cap][bar]overlay=x='-w+w*t/{total:.2f}':y=0:shortest=1[v]"
     )
+    tail = length - total
     if music:
         log(f"Music: {music.stem}")
         inputs += ["-stream_loop", "-1", "-i", str(music)]
         vol = cfg.get("music", {}).get("volume_db", -17)
         audio_graph = (
-            f";[1:a]apad=pad_dur={tail},asplit=2[vo][sc];"
+            f";[1:a]apad=pad_dur={tail:.2f},asplit=2[vo][sc];"
             f"[2:a]volume={vol}dB,atrim=0:{length:.2f},afade=t=in:d=1.5,"
-            f"afade=t=out:st={max(length - 2.5, 0):.2f}:d=2.5[mu];"
+            f"afade=t=out:st={max(length - 2.0, 0):.2f}:d=2.0[mu];"
             f"[mu][sc]sidechaincompress=threshold=0.05:ratio=4:attack=20:release=400[duck];"
             f"[vo][duck]amix=inputs=2:duration=first:normalize=0,"
             f"loudnorm=I=-14:TP=-1.5:LRA=11[a]"
         )
     else:
-        audio_graph = f";[1:a]apad=pad_dur={tail},loudnorm=I=-14:TP=-1.5:LRA=11[a]"
-
+        audio_graph = f";[1:a]apad=pad_dur={tail:.2f},loudnorm=I=-14:TP=-1.5:LRA=11[a]"
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", *inputs,
          "-filter_complex", video_graph + audio_graph,
-         "-map", "[v]", "-map", "[a]",
-         "-t", f"{length:.2f}",
+         "-map", "[v]", "-map", "[a]", "-t", f"{length:.2f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-profile:v", "high",
          "-pix_fmt", "yuv420p", "-r", str(fps),
          "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
          "-movflags", "+faststart", str(final)],
         check=True, cwd=folder,
     )
-    size_mb = final.stat().st_size / 1e6
-    log(f"Video ready: {final.name} ({size_mb:.1f} MB)")
+    log(f"Video ready: {final.name} ({final.stat().st_size / 1e6:.1f} MB, {length:.1f}s)")
     return final

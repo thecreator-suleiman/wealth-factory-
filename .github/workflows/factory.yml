@@ -36,18 +36,21 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core > /dev/null
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core libcairo2-dev pkg-config > /dev/null
           pip install -q -r requirements.txt
-          mkdir -p work/fonts
-          curl -fsSL -o work/fonts/Anton-Regular.ttf \
-            https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf || echo "Font download failed - using backup font"
+          mkdir -p work/fonts ~/.local/share/fonts
+          if curl -fsSL -o work/fonts/Anton-Regular.ttf \
+               https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf; then
+            cp work/fonts/Anton-Regular.ttf ~/.local/share/fonts/ && fc-cache -f > /dev/null
+          else
+            echo "Font download failed - using backup font"; rm -f work/fonts/Anton-Regular.ttf
+          fi
 
       - name: Make and post the video
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
           WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
           CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
           WHATABOT_API_KEY: ${{ secrets.WHATABOT_API_KEY }}
