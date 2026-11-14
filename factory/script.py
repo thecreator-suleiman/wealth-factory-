@@ -8,10 +8,10 @@ from .common import env, log
 
 # Tried in order. If one is busy, retired or out of free quota, the next is used.
 MODELS = [
-    "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-2.5-flash-lite",
     "gemini-flash-lite-latest",
+    "gemini-2.5-flash",
 ]
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -117,7 +117,7 @@ def _call(model: str, key: str, prompt: str) -> dict:
         API.format(model=model),
         headers={"x-goog-api-key": key, "Content-Type": "application/json"},
         json=body,
-        timeout=120,
+        timeout=240,
     )
     if r.status_code != 200:
         raise RuntimeError(f"Gemini {model} HTTP {r.status_code}: {r.text[:300]}")
