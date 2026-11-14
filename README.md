@@ -11,7 +11,7 @@ piano music, big captions and a progress bar.
 - ✅ = posted (tap "open" to see it)
 - ❌ = something went wrong (the message says what)
 
-Videos go out at about **17:17 and 00:17 Kigali time** (morning and evening in the USA, afternoon and evening in Europe). GitHub can be up to an
+Videos go out at about **12:00 (noon) and 00:00 (midnight) Kigali time**. GitHub can be up to an
 hour late at busy times; that's normal.
 
 ---
