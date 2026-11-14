@@ -20,6 +20,27 @@ from .voice import fit_length, make_voice
 HISTORY = DATA / "history.json"
 
 
+def wait_for_slot(cfg: dict) -> None:
+    """Hold a finished video until the next posting time (if it is less than 70 minutes away)."""
+    import time as _t
+    from datetime import timedelta
+    now = datetime.now(timezone.utc)
+    best = None
+    for hhmm in cfg["posting"].get("times_utc", []):
+        h, m = map(int, hhmm.split(":"))
+        slot = now.replace(hour=h, minute=m, second=0, microsecond=0)
+        if slot < now - timedelta(minutes=5):
+            slot += timedelta(days=1)
+        if best is None or slot < best:
+            best = slot
+    if best is None:
+        return
+    wait = (best - now).total_seconds()
+    if 0 < wait <= 70 * 60:
+        log(f"Video ready early - waiting {wait / 60:.0f} min to post at {best:%H:%M} UTC")
+        _t.sleep(wait)
+
+
 def beat_times(beats: list[dict], words: list, total: float) -> list[tuple[float, float]]:
     """When each scene starts and ends, following the spoken words."""
     counts = [len(b["text"].split()) for b in beats]
@@ -75,6 +96,8 @@ def run() -> int:
         results = None
         video_url = ""
         if posting_enabled():
+            if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+                wait_for_slot(cfg)
             step = "putting the video online"
             video_url = host_video(video, f"{run_id}.mp4")
             step = "posting to social media"

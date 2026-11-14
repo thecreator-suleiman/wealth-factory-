@@ -42,6 +42,9 @@ music:
   volume_db: -17                  # background level under the voice
 
 posting:
+  # Exact posting times (UTC). Runs start ~40 min early, finish the video, then wait.
+  # 10:00 UTC = 12:00 Kigali, 22:00 UTC = 00:00 Kigali
+  times_utc: ["10:00", "22:00"]
   platforms: ["tiktok", "instagram", "youtube"]
   youtube_category: "27"          # 27 = Education
   # AI label per platform, following each platform's own rules:
