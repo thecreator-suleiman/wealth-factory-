@@ -24,5 +24,31 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-14T21:49+00:00",
+    "topic": "Young workers hit by AI job shifts",
+    "title": "AI Is Stealing Young People's Jobs",
+    "format": "Follow the money",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "seconds": 71.1,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261114-2149.mp4",
+    "results": {
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7708148532447874312",
+        "error": ""
+      },
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=C32uq2K2C1k",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DfvN3xHgj1A/",
+        "error": ""
+      }
+    }
   }
 ]
