@@ -60,7 +60,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Cap,{font},{size},{BLACK},{BLACK},{WHITE},&H00000000,{bold},0,0,0,100,100,2,0,1,10,0,5,60,60,0,1
-Style: Hook,{font},{size + 6},{WHITE},{WHITE},{GREEN},&H00000000,{bold},0,0,0,100,100,2,0,3,22,0,5,60,60,0,1
+Style: Hook,{font},{size + 40},{WHITE},{WHITE},{GREEN},&H00000000,{bold},0,0,0,100,100,2,0,3,22,0,5,60,60,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -69,7 +69,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if hook:
         lines.append(
             f"Dialogue: 1,{_ts(0)},{_ts(2.6)},Hook,,0,0,0,,"
-            f"{{\\pos({w // 2},{int(h * 0.14)})\\fad(100,200)\\fscx85\\fscy85\\t(0,120,\\fscx100\\fscy100)}}"
+            f"{{\\pos({w // 2},{int(h * 0.30)})\\fad(60,200)\\fscx60\\fscy60\\t(0,140,\\fscx105\\fscy105)\\t(140,260,\\fscx100\\fscy100)}}"
             f"{_esc(hook.upper())}"
         )
     chunks = _chunks(words)

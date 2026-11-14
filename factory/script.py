@@ -82,8 +82,11 @@ Do NOT repeat any of these past topics:
 
 STRUCTURE (10-14 "beats"; each beat = 1-2 short spoken sentences + the scene shown while they are spoken).
 Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds).
-1. COLD OPEN (beat 1): rush straight in with a bold, specific claim about what is happening - a number, a
-   name, a contradiction. No greeting, no "stop scrolling", no "did you know", no "in this video". Max 14 words.
+1. HOOK (beat 1, max 14 words): create instant tension about the VIEWER or a mystery. Use one of these patterns:
+   "X just did Y... and you're the one who pays for it."  /  "Something strange is happening to [thing]."
+   "Nobody's talking about this, but [big thing] is quietly [breaking]."  /  "[Rich person/company] just made a
+   move that should scare you."  Never open with a plain statistic. No greeting, no "stop scrolling".
+   Beat 2 must then deliver the first shocking fact.
 2. THE SETUP (1-2 beats): what is happening, in plain words, with one concrete fact.
 3. HOW IT WORKS (3-4 beats): explain the mechanism like you are talking to a smart friend. Use one funny,
    casual analogy or label (like "hot potato", "dine and dash", "musical chairs").
@@ -113,7 +116,7 @@ ALSO RETURN:
 - "topic": the subject in under 8 words (used to avoid repeats).
 - "title": a YouTube Shorts title under 60 characters: ominous, declarative, curiosity-driven but honest
   (style: "X Is Breaking", "It's Worse Than You Think", "The Smart Money Is Leaving"). Max one ALL-CAPS word.
-- "hook_text": 3-6 words shown big on screen in the first 2 seconds.
+- "hook_text": 2-5 punchy words shown huge on screen in the first 2 seconds (e.g. "YOU'RE PAYING FOR THIS", "THIS IS BAD").
 - "caption": 1-2 short sentences for the post + a question that invites comments.
 - "hashtags": 3-5 relevant hashtags without the # sign, lowercase.
 {feedback}"""
@@ -202,8 +205,8 @@ def _clean(story: dict, n_images: int = 0) -> dict:
     story["script"] = " ".join(b["text"] for b in beats)
     tags = [re.sub(r"[^a-z0-9]", "", t.lower()) for t in story.get("hashtags", [])]
     story["hashtags"] = [t for t in tags if t][:5]
-    story["title"] = story["title"].strip().strip('"')[:95]
-    story["hook_text"] = story["hook_text"].strip().strip('"')
+    story["title"] = story["title"].split("|")[0].strip().strip('"')[:70]
+    story["hook_text"] = " ".join(story["hook_text"].strip().strip('"').split()[:5])
     return story
 
 
