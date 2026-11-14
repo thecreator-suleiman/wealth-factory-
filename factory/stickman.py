@@ -23,7 +23,7 @@ MOODS = ["happy", "sad", "neutral", "shocked", "angry", "worried"]
 PROPS = ["none", "money_bag", "coins", "cash", "chart_up", "chart_down", "arrow_up", "arrow_down",
          "laptop", "phone", "house", "car", "building", "shop", "piggy_bank", "briefcase",
          "lightbulb", "clock", "trophy", "question", "warning", "globe", "rocket", "document",
-         "crown", "lock", "calendar", "scale", "plane", "factory"]
+         "crown", "lock", "calendar", "scale", "plane", "factory", "bank", "newspaper"]
 
 FONT = "Anton"
 
@@ -661,7 +661,46 @@ def _factory(ctx, t, g):
         fill_stroke(ctx, GREEN, INK, 5)
 
 
+def _bank(ctx, t, g):
+    ctx.move_to(-200, -60)
+    ctx.line_to(0, -170)
+    ctx.line_to(200, -60)
+    ctx.close_path()
+    fill_stroke(ctx)
+    _dollar(ctx, 0, -95, 70)
+    for i in range(4):
+        rrect(ctx, -165 + i * 100, -45, 30, 170, 4)
+        fill_stroke(ctx, (1, 1, 1), INK, 7)
+    rrect(ctx, -210, 125, 420, 40, 6)
+    fill_stroke(ctx, (1, 1, 1))
+    if math.sin(t * 3) > 0.6:  # a crack appears now and then
+        ctx.move_to(-20, -40)
+        ctx.line_to(10, 10)
+        ctx.line_to(-15, 60)
+        ctx.line_to(15, 120)
+        stroke(ctx, RED, 7)
+
+
+def _newspaper(ctx, t, g):
+    rrect(ctx, -180, -150, 360, 300, 10)
+    fill_stroke(ctx, (1, 1, 1))
+    rrect(ctx, -150, -125, 300, 50, 6)
+    fill_stroke(ctx, INK, INK, 4)
+    text(ctx, "NEWS", 0, -100, 40, (1, 1, 1))
+    rrect(ctx, -150, -55, 130, 110, 6)
+    fill_stroke(ctx, GREEN, INK, 5)
+    for i in range(5):
+        ctx.move_to(0, -45 + i * 25)
+        ctx.line_to(150, -45 + i * 25)
+        stroke(ctx, GREY, 8)
+    for i in range(3):
+        ctx.move_to(-150, 80 + i * 25)
+        ctx.line_to(150 - i * 60, 80 + i * 25)
+        stroke(ctx, GREY, 8)
+
+
 _PROPS = {
+    "bank": _bank, "newspaper": _newspaper,
     "plane": _plane, "factory": _factory,
     "money_bag": _money_bag, "coins": _coins, "cash": _cash,
     "chart_up": lambda c, t, g: _chart(c, t, g, True), "chart_down": lambda c, t, g: _chart(c, t, g, False),
@@ -693,6 +732,50 @@ def _big_text(ctx, s, t, start=0.3):
     rrect(ctx, -ew / 2 - 40, -size * 0.62, ew + 80, size * 1.24, 24)
     fill_stroke(ctx, GREEN, INK, 10)
     text(ctx, s, 0, 0, size, (1, 1, 1), outline=INK)
+    ctx.restore()
+
+
+def _wrap(ctx, s, size, max_w):
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    ctx.set_font_size(size)
+    lines, cur = [], ""
+    for word in s.split():
+        test = f"{cur} {word}".strip()
+        if ctx.text_extents(test).width > max_w and cur:
+            lines.append(cur)
+            cur = word
+        else:
+            cur = test
+    if cur:
+        lines.append(cur)
+    return lines[:3]
+
+
+def _headline(ctx, s, t, start=0.2):
+    """A news card: 'BREAKING' tag + the headline, like a news ticker screenshot."""
+    k = pop(t, start, 0.4)
+    if k <= 0:
+        return
+    s = s.upper()
+    size = 56
+    lines = _wrap(ctx, s, size, 820)
+    h = 120 + len(lines) * size * 1.15
+    ctx.save()
+    ctx.translate(W / 2, 330)
+    ctx.scale(k, k)
+    ctx.rotate(math.radians(-1.5))
+    rrect(ctx, -460, -h / 2, 920, h, 22)
+    fill_stroke(ctx, (1, 1, 1), INK, 10)
+    rrect(ctx, -430, -h / 2 - 34, 290, 68, 12)
+    fill_stroke(ctx, RED, INK, 8)
+    text(ctx, "BREAKING", -285, -h / 2, 40, (1, 1, 1))
+    y = -h / 2 + 95
+    for line in lines:
+        text(ctx, line, -415, y, size, INK, align="left")
+        y += size * 1.15
+    ctx.move_to(-415, h / 2 - 28)
+    ctx.line_to(-415 + 830 * ease_out((t - start - 0.3) / 1.2), h / 2 - 28)
+    stroke(ctx, GREEN, 10)
     ctx.restore()
 
 
@@ -745,7 +828,10 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
             elif not scene.get("big_text"):
                 prop(ctx, p, W / 2, 470, t, 0.55)
     ctx.restore()
-    _big_text(ctx, scene.get("big_text", ""), t, 2.7 if idx == 0 else 0.3)
+    if scene.get("headline"):
+        _headline(ctx, scene["headline"], t, 2.7 if idx == 0 else 0.2)
+    else:
+        _big_text(ctx, scene.get("big_text", ""), t, 2.7 if idx == 0 else 0.3)
     _brand(ctx)
 
 

@@ -9,11 +9,11 @@ channel:
   handle: "@monezic"
   # What the channel is about. Every video is written from this.
   niche: >
-    Real money stories: true, well-documented stories of people and companies
-    who won or lost big with money - the one decision, mistake, habit or idea
-    that changed everything - told as a gripping story with a lesson at the end.
-    Include stories from Africa (especially East Africa and Rwanda) as often as
-    stories from the rest of the world.
+    Money and the economy explained casually: what is really happening with markets,
+    housing, jobs, prices, banks, big companies, AI money and global economies - and why
+    it matters to normal people. About 70% of videos react to a real money/economy story
+    from the past 7 days; 30% are evergreen "how money really works" or history stories
+    that rhyme with today. Africa and the world both count.
   audience: "Young people (18-35) who want to understand money and build a better life."
   language: "English"
   # Safety rules the writer must always follow.
@@ -22,7 +22,8 @@ channel:
     - "If you are not sure about an exact number or date, describe it without the number."
     - "Never give personal financial or investment advice. Teach through the story only."
     - "No get-rich-quick promises, no gambling, no crypto pumping, no scams."
-    - "Tension and curiosity are good. Gore, panic, fear-mongering and shocking imagery are not."
+    - "Urgent and skeptical is good; panic, doom predictions and fake certainty are not. Never predict exact crashes or dates."
+    - "Never open with filler like 'Stop scrolling', 'Give me one minute', 'Did you know', 'Hey guys' or 'In this video'. Rush straight into the story."
 
 video:
   target_seconds: 70        # 61-80s keeps TikTok rewards eligibility (needs 60s+)
@@ -60,15 +61,15 @@ telegram:
 
 # Formats rotate so the channel never looks mass-produced.
 formats:
-  - name: "The one decision"
-    brief: "One single decision that made or destroyed a fortune. Build up to the moment of the decision, then reveal what happened."
-  - name: "Rise and fall"
-    brief: "Someone who rose very high and then lost almost everything. Show the warning signs everyone ignored."
-  - name: "From nothing"
-    brief: "Someone who started with almost nothing. Focus on the specific, surprising thing they did differently."
+  - name: "Something is breaking"
+    brief: "A system people trust (a market, a bank, housing, a currency, a big company) is quietly cracking. Show the warning signs, how it works, and what history says happens next."
+  - name: "Follow the money"
+    brief: "Who is really making or losing money in this story, and how. Expose the incentive nobody talks about."
+  - name: "History is rhyming"
+    brief: "Today's story looks a lot like a famous past event (2008, dot-com, 1929, a past currency crisis). Walk through the parallel and where it breaks."
+  - name: "The smart money is moving"
+    brief: "What insiders, billionaires, big funds or governments are doing with their money right now, and why regular people should pay attention."
   - name: "The hidden cost"
-    brief: "A common money habit or belief, shown through a real story, that quietly costs people a fortune."
-  - name: "Myth vs truth"
-    brief: "A famous money story everyone tells wrong. Tell the common version, then the real, documented version."
-  - name: "African empire"
-    brief: "A real African entrepreneur, company or market story - how it was built, the risk taken, the lesson."
+    brief: "A cost that is quietly hitting normal people (inflation, fees, debt, taxes, rent) explained simply, with a real example."
+  - name: "Africa money watch"
+    brief: "A real money/economy story from Africa (East Africa when possible) and what it means for people living there and for the world."
