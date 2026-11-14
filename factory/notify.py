@@ -72,23 +72,29 @@ def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
 
 # ---------------------------------------------------------------- WhatsApp (CallMeBot, free)
 def send_whatsapp(text: str) -> None:
-    """Sends a WhatsApp message to your own phone. Skipped quietly if not set up."""
+    """Sends a WhatsApp message to your own phone (CallMeBot or Whatabot, both free).
+    Skipped quietly if neither is set up."""
     phone = env("WHATSAPP_PHONE", required=False).replace(" ", "")
-    key = env("CALLMEBOT_API_KEY", required=False)
-    if not phone or not key:
+    if not phone:
         return
-    try:
-        r = requests.get(
-            "https://api.callmebot.com/whatsapp.php",
-            params={"phone": phone, "apikey": key, "text": text[:1500]},
-            timeout=60,
-        )
-        if r.status_code != 200 or "ERROR" in r.text.upper()[:300]:
-            log(f"WhatsApp message failed: {r.status_code} {r.text[:200]}")
-        else:
-            log("WhatsApp message sent.")
-    except Exception as e:  # noqa: BLE001
-        log(f"WhatsApp message failed: {e}")
+    services = []
+    if env("CALLMEBOT_API_KEY", required=False):
+        services.append(("CallMeBot", ["https://api.callmebot.com/whatsapp.php"],
+                         {"phone": phone, "apikey": env("CALLMEBOT_API_KEY", required=False)}))
+    if env("WHATABOT_API_KEY", required=False):
+        services.append(("Whatabot", ["https://api.whatabot.net/whatsapp/sendMessage",
+                                      "http://api.whatabot.net/whatsapp/sendMessage"],
+                         {"phone": phone, "apikey": env("WHATABOT_API_KEY", required=False)}))
+    for name, urls, params in services:
+        for url in urls:
+            try:
+                r = requests.get(url, params={**params, "text": text[:1500]}, timeout=60)
+                if r.status_code == 200 and "ERROR" not in r.text.upper()[:300]:
+                    log(f"WhatsApp message sent ({name}).")
+                    return
+                log(f"WhatsApp via {name} failed: {r.status_code} {r.text[:200]}")
+            except Exception as e:  # noqa: BLE001
+                log(f"WhatsApp via {name} failed: {e}")
 
 
 def whatsapp_report(story: dict, results: dict | None) -> str:
