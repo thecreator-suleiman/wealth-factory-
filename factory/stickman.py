@@ -23,7 +23,7 @@ MOODS = ["happy", "sad", "neutral", "shocked", "angry", "worried"]
 PROPS = ["none", "money_bag", "coins", "cash", "chart_up", "chart_down", "arrow_up", "arrow_down",
          "laptop", "phone", "house", "car", "building", "shop", "piggy_bank", "briefcase",
          "lightbulb", "clock", "trophy", "question", "warning", "globe", "rocket", "document",
-         "crown", "lock", "calendar", "scale"]
+         "crown", "lock", "calendar", "scale", "plane", "factory"]
 
 FONT = "Anton"
 
@@ -618,7 +618,51 @@ def _scale(ctx, t, g):
     ctx.restore()
 
 
+def _plane(ctx, t, g):
+    ctx.save()
+    ctx.translate(-60 + g * 60, -g * 40)
+    ctx.rotate(-0.12)
+    ctx.move_to(-210, 0)
+    ctx.curve_to(-210, -45, 150, -45, 210, 0)
+    ctx.curve_to(150, 40, -210, 40, -210, 0)
+    fill_stroke(ctx, (1, 1, 1))
+    for poly in ([(-20, -10), (60, -160), (100, -160), (60, -10)], [(-20, 10), (60, 150), (100, 150), (60, 10)],
+                 [(-190, -10), (-160, -90), (-130, -90), (-140, -10)]):
+        ctx.move_to(*poly[0])
+        for pt in poly[1:]:
+            ctx.line_to(*pt)
+        ctx.close_path()
+        fill_stroke(ctx)
+    for i in range(5):
+        ctx.arc(-110 + i * 50, -5, 9, 0, 2 * math.pi)
+        ctx.set_source_rgb(*INK)
+        ctx.fill()
+    ctx.restore()
+
+
+def _factory(ctx, t, g):
+    ctx.move_to(-180, 150)
+    ctx.line_to(-180, -20)
+    for i in range(3):
+        ctx.line_to(-180 + i * 100 + 100, -80)
+        ctx.line_to(-180 + i * 100 + 100, -20)
+    ctx.line_to(180, 150)
+    ctx.close_path()
+    fill_stroke(ctx, (1, 1, 1))
+    rrect(ctx, 120, -200, 50, 190, 6)
+    fill_stroke(ctx)
+    for i in range(3):
+        r = 25 + ((t * 40 + i * 30) % 90) * 0.4
+        ctx.arc(150 + i * 25, -230 - ((t * 60 + i * 40) % 120), r, 0, 2 * math.pi)
+        ctx.set_source_rgba(0.6, 0.6, 0.62, 0.5)
+        ctx.fill()
+    for i in range(3):
+        rrect(ctx, -140 + i * 90, 40, 50, 50, 4)
+        fill_stroke(ctx, GREEN, INK, 5)
+
+
 _PROPS = {
+    "plane": _plane, "factory": _factory,
     "money_bag": _money_bag, "coins": _coins, "cash": _cash,
     "chart_up": lambda c, t, g: _chart(c, t, g, True), "chart_down": lambda c, t, g: _chart(c, t, g, False),
     "arrow_up": lambda c, t, g: _arrow(c, t, g, True), "arrow_down": lambda c, t, g: _arrow(c, t, g, False),
@@ -634,6 +678,7 @@ _PROPS = {
 def _big_text(ctx, s, t, start=0.3):
     if not s:
         return
+    s = s.upper()
     k = pop(t, start, 0.4)
     if k <= 0:
         return
