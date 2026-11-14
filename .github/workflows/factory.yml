@@ -2,9 +2,11 @@ name: Wealth Factory
 
 on:
   schedule:
-    # Times are UTC. 06:17 UTC = 08:17 Kigali, 16:17 UTC = 18:17 Kigali.
-    - cron: "17 6 * * *"
-    - cron: "17 16 * * *"
+    # Times are UTC, aimed at USA + Europe viewers:
+    # 15:17 UTC = 17:17 Kigali = 16:17 Europe (CET) = 10:17 New York
+    # 22:17 UTC = 00:17 Kigali = 23:17 Europe (CET) = 17:17 New York
+    - cron: "17 15 * * *"
+    - cron: "17 22 * * *"
   workflow_dispatch:
     inputs:
       post:
