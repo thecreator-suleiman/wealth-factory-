@@ -39,8 +39,8 @@ LABELS = re.compile(
 
 def _prompt(cfg: dict, fmt: dict, style: str, used_topics: list[str], feedback: str) -> str:
     ch, vid = cfg["channel"], cfg["video"]
-    words_lo = int(vid["target_seconds"] * 2.4)
-    words_hi = int(vid["target_seconds"] * 2.75)
+    words_lo = int(vid["target_seconds"] * 2.6)
+    words_hi = int(vid["target_seconds"] * 2.9)
     n = vid["images"]
     avoid = "\n".join(f"- {t}" for t in used_topics[-80:]) or "- (none yet)"
     rules = "\n".join(f"- {r}" for r in ch["rules"])
@@ -120,8 +120,8 @@ def _clean(story: dict, n_images: int) -> dict:
 
 def _problems(story: dict, cfg: dict) -> list[str]:
     words = len(story["script"].split())
-    lo = int(cfg["video"]["target_seconds"] * 2.3)
-    hi = int(cfg["video"]["target_seconds"] * 2.9)
+    lo = int(cfg["video"]["target_seconds"] * 2.5)
+    hi = int(cfg["video"]["target_seconds"] * 3.1)
     issues = []
     if words < lo:
         issues.append(f"The script has only {words} words; it must have at least {lo}.")

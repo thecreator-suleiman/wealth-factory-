@@ -24,7 +24,7 @@ channel:
     - "Tension and curiosity are good. Gore, panic, fear-mongering and shocking imagery are not."
 
 video:
-  target_seconds: 72        # 65-80s keeps TikTok rewards eligibility (needs 60s+)
+  target_seconds: 75        # 65-80s keeps TikTok rewards eligibility (needs 60s+)
   images: 15                # number of AI images per video
   width: 1080
   height: 1920

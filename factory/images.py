@@ -57,7 +57,7 @@ def make_images(cfg: dict, prompts: list[str], folder: Path, base_seed: int) -> 
     folder.mkdir(parents=True, exist_ok=True)
     w, h = cfg["video"]["width"], cfg["video"]["height"]
     key = env("POLLINATIONS_API_KEY", required=False)
-    gap = 3 if key else 16  # the free no-key service allows about 1 image per 15 s
+    gap = 3 if key else 47  # the free no-key service allows 1 image per 45 s
     log(f"Making {len(prompts)} images ({'with' if key else 'without'} Pollinations key)")
     paths, good = [], []
     last = 0.0
