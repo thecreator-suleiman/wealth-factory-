@@ -43,6 +43,13 @@ music:
 posting:
   platforms: ["tiktok", "instagram", "youtube"]
   youtube_category: "27"          # 27 = Education
+  # AI label per platform, following each platform's own rules:
+  # - YouTube: not required for animated/cartoon videos with a generic AI narrator.
+  # - TikTok and Instagram: required for "realistic AI audio" - our AI voiceover counts.
+  ai_label:
+    youtube: false
+    tiktok: true
+    instagram: true
   hashtags_max: 5
 
 telegram:

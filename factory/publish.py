@@ -112,6 +112,10 @@ STATUS = """query($id: PostId!) {
 }"""
 
 
+def _ai(cfg: dict, service: str) -> bool:
+    return bool(cfg["posting"].get("ai_label", {}).get(service, True))
+
+
 def _metadata(service: str, story: dict, cfg: dict) -> dict:
     if service == "youtube":
         return {"youtube": {
@@ -120,12 +124,12 @@ def _metadata(service: str, story: dict, cfg: dict) -> dict:
             "privacy": "public",
             "madeForKids": False,
             "notifySubscribers": True,
-            "isAiGenerated": True,
+            "isAiGenerated": _ai(cfg, "youtube"),
         }}
     if service == "instagram":
-        return {"instagram": {"type": "reel", "shouldShareToFeed": True, "isAiGenerated": True}}
+        return {"instagram": {"type": "reel", "shouldShareToFeed": True, "isAiGenerated": _ai(cfg, "instagram")}}
     if service == "tiktok":
-        return {"tiktok": {"isAiGenerated": True}}
+        return {"tiktok": {"isAiGenerated": _ai(cfg, "tiktok")}}
     return {}
 
 
@@ -154,7 +158,6 @@ def post_everywhere(cfg: dict, story: dict, video_url: str) -> dict:
             "text": text,
             "mode": "shareNow",
             "schedulingType": "automatic",
-            "aiAssisted": True,
             "assets": [{"video": {"url": video_url, "metadata": {"thumbnailOffset": 500}}}],
             "metadata": _metadata(service, story, cfg),
         }
