@@ -1,7 +1,7 @@
 """Step 2: turn the script into a human-sounding voiceover + word timings for captions.
 
 Main engine: Microsoft neural voices through the free `edge-tts` package.
-If Microsoft's voice service is down, an offline male voice (Piper Ryan) is used.
+If Microsoft's voice service is down, a backup male voice (Kokoro Michael) is used.
 """
 import asyncio
 import re
@@ -101,32 +101,30 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
         if _t.time() > deadline:
             break
         _t.sleep(min(30 * attempt, 120))
-    # Backup male voice that runs offline on GitHub (no Microsoft service needed).
-    log("Andrew voice unavailable - using backup male voice (Piper Ryan).")
-    wav = folder / "voice_piper.wav"
-    _piper(clean, wav)
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
-                    "-filter:a", "atempo=1.05", str(out)], check=True)
+    # Backup male voice that runs inside GitHub (no Microsoft service needed).
+    log("Andrew voice unavailable - using backup male voice (Kokoro Michael).")
+    wav = folder / "voice_backup.wav"
+    _kokoro(clean, wav)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), str(out)], check=True)
     total = audio_seconds(out)
-    return out, _fix_names(_estimate_timings(clean, total)), "Piper Ryan (backup male)"
+    return out, _fix_names(_estimate_timings(clean, total)), "Kokoro Michael (backup male)"
 
 
-def _piper(text: str, wav: Path) -> None:
-    import wave
+def _kokoro(text: str, wav: Path) -> None:
+    import sys
     import requests
-    base = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high/"
-    mdir = Path("work/piper"); mdir.mkdir(parents=True, exist_ok=True)
-    for f in ("en_US-ryan-high.onnx", "en_US-ryan-high.onnx.json"):
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "kokoro-onnx", "soundfile"], check=True)
+    base = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/"
+    mdir = Path("work/kokoro"); mdir.mkdir(parents=True, exist_ok=True)
+    for f in ("kokoro-v1.0.onnx", "voices-v1.0.bin"):
         if not (mdir / f).exists():
-            r = requests.get(base + f, timeout=300); r.raise_for_status()
+            r = requests.get(base + f, timeout=600); r.raise_for_status()
             (mdir / f).write_bytes(r.content)
-    from piper import PiperVoice
-    pv = PiperVoice.load(str(mdir / "en_US-ryan-high.onnx"))
-    with wave.open(str(wav), "wb") as wf:
-        if hasattr(pv, "synthesize_wav"):
-            pv.synthesize_wav(text, wf)
-        else:
-            pv.synthesize(text, wf)
+    import soundfile as sf
+    from kokoro_onnx import Kokoro
+    k = Kokoro(str(mdir / "kokoro-v1.0.onnx"), str(mdir / "voices-v1.0.bin"))
+    audio, sr = k.create(text, voice="am_michael", speed=1.05, lang="en-us")
+    sf.write(str(wav), audio, sr)
 
 
 def fit_length(voice: Path, words: list, lo: float = 82.0, hi: float = 110.0):
