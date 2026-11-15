@@ -127,8 +127,8 @@ ALSO RETURN:
 def _research(key: str, fmt: dict, used_topics: list[str], trending: bool) -> str:
     """Finds a real, recent money story with Google Search (or an evergreen one)."""
     if not trending:
-        return ("TOPIC: choose an evergreen story (how money really works, or a famous money event from history) "
-                "that fits the format and still matters today. Only use facts you are certain about.")
+        return ("TOPIC: choose one real, famous, well-documented story about a specific PERSON or COMPANY "
+                "that fits the format. Only use facts you are certain about.")
     avoid = "; ".join(used_topics[-40:]) or "none"
     prompt = f"""Use Google Search to find ONE real money/economy/markets news story from the last 7 days
 that fits this video format: "{fmt['name']}" - {fmt['brief']}
