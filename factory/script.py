@@ -16,7 +16,7 @@ MODELS = [
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
-from .stickman import MOODS, POSES, PROPS
+from .stickman import MOODS, PLACES, POSES, PROPS
 
 CHAR = {
     "type": "OBJECT",
@@ -33,10 +33,11 @@ BEAT = {
         "text": {"type": "STRING"},
         "characters": {"type": "ARRAY", "items": CHAR},
         "prop": {"type": "STRING", "enum": PROPS},
+        "place": {"type": "STRING", "enum": PLACES},
         "big_text": {"type": "STRING"},
         "headline": {"type": "STRING"},
     },
-    "required": ["text", "characters", "prop", "big_text", "headline"],
+    "required": ["text", "characters", "place", "prop", "big_text", "headline"],
 }
 SCHEMA = {
     "type": "OBJECT",
@@ -109,6 +110,10 @@ FOR EACH BEAT'S SCENE:
   use many different actions across the video. Use 2 figures when two sides interact.
 - "label": short name (max 12 letters) if the figure IS a real person, company, country or group
   ("FED", "BANKS", "YOU", "CHINA", "INVESTORS"), otherwise "". Use labels often so viewers follow who is who.
+- "place": where the sentence happens, drawn as the background so a viewer WITHOUT sound understands it:
+  office (desk, chair), home, bank, street (city), stage (speech/announcement), garage (humble start),
+  factory, store (shop/selling), market (stock market screen), courtroom (lawsuit/jail), or "auto".
+  Keep the same place for beats in the same location; change place when the story moves.
 - "prop": the one object that best shows the sentence, or "none".
 - "big_text": a short number, year or word (max 8 characters) from that beat's sentence, like "$40M", "2008",
   "x100", "BROKE". About half the beats; otherwise "".
@@ -207,6 +212,7 @@ def _clean(story: dict, n_images: int = 0) -> dict:
         big = (beat.get("big_text") or "").strip()[:9]
         beats.append({"text": t, "characters": chars,
                       "prop": beat.get("prop") if beat.get("prop") in PROPS else "none",
+                      "place": beat.get("place") if beat.get("place") in PLACES else "auto",
                       "big_text": big, "headline": (beat.get("headline") or "").strip()[:60]})
     story["beats"] = beats
     story["script"] = " ".join(b["text"] for b in beats)

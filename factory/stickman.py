@@ -114,6 +114,121 @@ def _limb(ctx, x, y, a1, l1, a2, l2):
     return hx, hy
 
 
+PLACES = ["auto", "office", "home", "bank", "street", "stage", "garage", "factory", "store", "market", "courtroom"]
+BG = (0.80, 0.81, 0.83)      # light lines: background never fights the characters
+BGF = (0.95, 0.96, 0.96)     # light fills
+_AUTO = {"type": "office", "sit": "office", "phone": "office", "sign": "office", "read": "home", "tired": "home",
+         "lie_down": "home", "dig": "garage", "carry": "garage", "push": "garage", "count_money": "bank",
+         "lift": "bank", "fly_money": "bank", "give": "store", "present": "stage", "explain": "stage",
+         "bow": "stage", "salute": "stage", "walk": "street", "run": "street", "sneak": "street"}
+
+
+def _L(ctx, pts, w=6, col=BG):
+    ctx.move_to(*pts[0])
+    for p in pts[1:]:
+        ctx.line_to(*p)
+    stroke(ctx, col, w)
+
+
+def _R(ctx, x, y, w, h, fill=BGF, col=BG, lw=6, r=6):
+    rrect(ctx, x, y, w, h, r)
+    fill_stroke(ctx, fill, col, lw)
+
+
+def _window(ctx, x, y, w=220, h=260):
+    _R(ctx, x, y, w, h, (0.93, 0.97, 1.0))
+    _L(ctx, [(x + w / 2, y), (x + w / 2, y + h)], 5)
+    _L(ctx, [(x, y + h / 2), (x + w, y + h / 2)], 5)
+
+
+def draw_place(ctx, place, t):
+    G = GROUND
+    if place == "office":
+        _window(ctx, 90, 520); _window(ctx, 770, 520)
+        _R(ctx, 420, 560, 240, 170, (1, 1, 1)); _L(ctx, [(440, 700), (500, 650), (560, 670), (640, 590)], 7, GREEN)
+        _L(ctx, [(540, 730), (540, 790)], 5)
+    elif place == "home":
+        _window(ctx, 120, 500, 260, 300)
+        _R(ctx, 640, G - 230, 380, 140, (0.93, 0.95, 0.94), BG, 6, 30)       # sofa
+        _R(ctx, 620, G - 300, 60, 210, (0.93, 0.95, 0.94), BG, 6, 20)
+        _R(ctx, 980, G - 300, 60, 210, (0.93, 0.95, 0.94), BG, 6, 20)
+        _L(ctx, [(560, G), (560, G - 380)], 6); _R(ctx, 500, G - 470, 120, 90, (1, 0.97, 0.85), BG, 6, 20)
+        _R(ctx, 760, 520, 180, 130, (1, 1, 1)); text(ctx, "HOME", 850, 585, 40, BG)
+    elif place == "bank":
+        _L(ctx, [(60, 620), (540, 430), (1020, 620), (60, 620)], 8)
+        text(ctx, "BANK", 540, 560, 70, BG)
+        for cx in (130, 330, 750, 950):
+            _R(ctx, cx - 30, 640, 60, G - 640 - 10, BGF, BG, 6, 4)
+        _R(ctx, 40, G - 20, 1000, 20, BGF, BG, 5, 2)
+    elif place == "street":
+        for i, (bx, bw, bh) in enumerate([(0, 200, 620), (210, 160, 460), (380, 240, 720), (640, 180, 520), (830, 250, 650)]):
+            _R(ctx, bx, G - bh, bw, bh, BGF, BG, 5, 2)
+            for wy in range(int(G - bh + 40), int(G - 80), 90):
+                for wx in range(int(bx + 25), int(bx + bw - 40), 60):
+                    _R(ctx, wx, wy, 30, 40, (0.9, 0.94, 0.98), BG, 3, 2)
+        _L(ctx, [(0, G + 40), (1080, G + 40)], 5)
+    elif place == "stage":
+        ctx.move_to(540, 300); ctx.line_to(230, G); ctx.line_to(850, G); ctx.close_path()
+        ctx.set_source_rgba(1, 0.85, 0.3, 0.13); ctx.fill()
+        _R(ctx, -20, 380, 170, G - 380, (0.93, 0.85, 0.85), BG, 6, 0); _R(ctx, 930, 380, 170, G - 380, (0.93, 0.85, 0.85), BG, 6, 0)
+        _R(ctx, 0, 360, 1080, 50, (0.93, 0.85, 0.85), BG, 6, 0)
+        _R(ctx, 0, G - 10, 1080, 40, (0.95, 0.92, 0.88), BG, 5, 0)
+    elif place == "garage":
+        _R(ctx, 120, 480, 840, 420, (0.96, 0.96, 0.95)); 
+        for yy in range(530, 900, 60):
+            _L(ctx, [(120, yy), (960, yy)], 4)
+        for bx, by in ((80, G - 120), (190, G - 120), (130, G - 230)):
+            _R(ctx, bx, by, 105, 105, (0.95, 0.9, 0.82), BG, 5, 4)
+        text(ctx, "GARAGE", 540, 450, 44, BG)
+    elif place == "factory":
+        for fx in (60, 380, 700):
+            _L(ctx, [(fx, G), (fx, 700), (fx + 110, 620), (fx + 110, 700), (fx + 220, 620), (fx + 220, 700), (fx + 320, 700), (fx + 320, G)], 6)
+        _R(ctx, 860, 380, 70, 320, BGF, BG, 6, 2)
+        for k in range(3):
+            o = (t * 40 + k * 60) % 180
+            ctx.arc(895 + k * 12, 360 - o, 26 + o * 0.15, 0, 2 * math.pi); stroke(ctx, BG, 5)
+    elif place == "store":
+        _R(ctx, 60, 470, 960, 90, (0.88, 0.96, 0.9), BG, 6, 6); text(ctx, "SHOP", 540, 515, 52, BG)
+        for sy in (650, 800, 950):
+            _L(ctx, [(80, sy), (440, sy)], 6)
+            for k in range(5):
+                _R(ctx, 95 + k * 68, sy - 70, 50, 66, BGF, BG, 4, 4)
+        _R(ctx, 640, G - 260, 380, 260, BGF, BG, 6, 4)
+    elif place == "market":
+        _R(ctx, 120, 420, 840, 480, (0.97, 0.98, 0.97))
+        pts = [(160 + i * 50, 700 + math.sin(i * 0.9 + t * 1.5) * 60 - i * 9) for i in range(16)]
+        _L(ctx, pts, 8, GREEN)
+        text(ctx, "STOCKS", 540, 470, 44, BG)
+        _L(ctx, [(540, 900), (540, 980)], 6)
+    elif place == "courtroom":
+        _R(ctx, 330, 560, 420, 300, (0.93, 0.9, 0.85))
+        text(ctx, "COURT", 540, 620, 46, BG)
+        _L(ctx, [(540, 680), (540, 820)], 6); _L(ctx, [(460, 700), (620, 700)], 6)
+        for cx in (100, 980):
+            _R(ctx, cx - 30, 500, 60, G - 500, BGF, BG, 6, 4)
+
+
+def _furniture(ctx, pose, x, hip_y, d, s):
+    """Chair under a sitting figure; a desk in front when typing."""
+    if pose in ("sit", "type"):
+        sx = x - 30 * d * s
+        _R(ctx, sx - 90 * s, hip_y + 5, 180 * s, 26 * s, (0.92, 0.86, 0.78), INK, 7, 6)          # seat
+        _L(ctx, [(sx - 80 * d * s, hip_y + 5), (sx - 80 * d * s, hip_y - 230 * s)], 9, INK)    # back
+        _L(ctx, [(sx - 70 * s, hip_y + 30 * s), (sx - 70 * s, GROUND)], 8, INK)
+        _L(ctx, [(sx + 70 * s, hip_y + 30 * s), (sx + 70 * s, GROUND)], 8, INK)
+    if pose == "type":
+        dx = x + 250 * d * s
+        top = hip_y - 40 * s
+        _R(ctx, dx - 150 * s, top, 300 * s, 24 * s, (0.92, 0.86, 0.78), INK, 7, 4)
+        _L(ctx, [(dx - 125 * s, top + 24 * s), (dx - 125 * s, GROUND)], 8, INK)
+        _L(ctx, [(dx + 125 * s, top + 24 * s), (dx + 125 * s, GROUND)], 8, INK)
+        lx = dx - 20 * d * s
+        _R(ctx, lx - 90 * s, top - 6 * s, 180 * s, 12 * s, (0.85, 0.85, 0.85), INK, 6, 3)        # keyboard
+        ctx.save(); ctx.translate(lx + 70 * d * s, top - 6 * s); ctx.rotate(-0.25 * d)
+        _R(ctx, -10 * s if d > 0 else -110 * s, -120 * s, 120 * s, 120 * s, (0.9, 0.97, 0.92), INK, 7, 6)
+        ctx.restore()
+
+
 def _A(**k):
     a = dict(legs=[(-10, 0), (10, 0)], arms=[(-25, -5), (25, 5)], dy=0.0, lean=0.0, tilt=0.0,
              dx=0.0, rot=0.0, fx=(), mood=None)
@@ -150,7 +265,7 @@ def action(name: str, t: float, d: int, s: float) -> dict:
         j = S(t * 30) * 3
         return _A(arms=[(-130 + j, -100), (130 - j, 100)], legs=[(-22, 0), (22, 0)], fx=("shock",))
     if name == "sit":
-        return _A(dy=270 * s, legs=[(80 * d, 100 * d), (95 * d, 90 * d)], arms=[(-35, -20), (35 * d, 60 * d)])
+        return _A(dy=140 * s, legs=[(88 * d, 0), (92 * d, 6 * d)], arms=[(-35, -20), (35 * d, 60 * d)])
     if name == "hold":
         return _A(arms=[(70 * d, 120 * d), (85 * d, 125 * d)])
     if name == "present":
@@ -199,8 +314,8 @@ def action(name: str, t: float, d: int, s: float) -> dict:
                   lean=8 * k, dy=-abs(k) * 15, fx=("notes",))
     if name == "type":
         k = abs(S(t * 16)) * 8
-        return _A(dy=270 * s, legs=[(80 * d, 100 * d), (95 * d, 90 * d)],
-                  arms=[(55 * d, (95 + k) * d), (60 * d, (90 - k) * d)], fx=("laptop",))
+        return _A(dy=140 * s, legs=[(88 * d, 0), (92 * d, 6 * d)],
+                  arms=[(70 * d, (95 + k) * d), (75 * d, (90 - k) * d)])
     if name == "phone":
         return _A(arms=[(-15, -5), (30 * d, 170 * d)], tilt=6 * s * S(t * 2), fx=("phone",))
     if name == "sign":
@@ -404,6 +519,7 @@ def figure(ctx, x, t, pose="stand", mood="neutral", label="", s=1.0, face_right=
         k = abs(a["rot"]) / 90
         piv = GROUND - 330 * s  # rotate around the middle of the body, then drop it onto the ground
         ctx.translate(x, piv + k * 255 * s); ctx.rotate(math.radians(a["rot"])); ctx.translate(-x, -piv)
+    _furniture(ctx, pose, x, hip_y, d, s)
     neck_x = x + math.sin(math.radians(lean)) * body
     neck_y = hip_y - math.cos(math.radians(lean)) * body
     for a1, a2 in a["legs"]:
@@ -1010,6 +1126,7 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
     ctx.paint()
     ctx.save()
     _camera(ctx, scene.get("_cam", "push"), t, scene.get("_seed", 0))
+    draw_place(ctx, scene.get("_place", "none"), t)
     _ground(ctx)
     chars = [c for c in scene.get("characters", []) if c.get("pose")][:3]
     p = scene.get("prop", "none") or "none"
@@ -1088,7 +1205,7 @@ _ALT = {"stand": ["explain", "point"], "present": ["explain", "point"], "point":
 def _prepare(scenes: list[dict]) -> list[dict]:
     """No two scenes in a row share the same action or camera; shaky camera on dramatic actions."""
     import zlib
-    prev_pose, prev_cam = None, None
+    prev_pose, prev_cam, prev_place = None, None, "none"
     for i, sc in enumerate(scenes):
         seed = zlib.crc32((sc.get("text", "") + str(i)).encode())
         sc["_seed"] = seed
@@ -1103,6 +1220,11 @@ def _prepare(scenes: list[dict]) -> list[dict]:
             opts = [c for c in CAMS if c != prev_cam]
             cam = opts[seed % len(opts)]
         sc["_cam"] = cam
+        pl = sc.get("place", "auto")
+        if pl not in PLACES or pl == "auto":
+            pl = _AUTO.get(pose, prev_place if i else "none")
+        sc["_place"] = pl
+        prev_place = pl
         prev_pose, prev_cam = pose, cam
     return scenes
 
