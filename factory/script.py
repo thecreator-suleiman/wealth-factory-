@@ -77,7 +77,7 @@ THIS VIDEO'S FORMAT: "{fmt['name']}" - {fmt['brief']}
 
 {research}
 
-Do NOT repeat any of these past topics:
+Do NOT repeat any of these past topics (pick a different person or company):
 {avoid}
 
 STRUCTURE (10-14 "beats"; each beat = 1-2 short spoken sentences + the scene shown while they are spoken).
@@ -87,12 +87,13 @@ Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds
    "Nobody's talking about this, but [big thing] is quietly [breaking]."  /  "[Rich person/company] just made a
    move that should scare you."  Never open with a plain statistic. No greeting, no "stop scrolling".
    Beat 2 must then deliver the first shocking fact.
-2. THE SETUP (1-2 beats): what is happening, in plain words, with one concrete fact.
-3. HOW IT WORKS (3-4 beats): explain the mechanism like you are talking to a smart friend. Use one funny,
-   casual analogy or label (like "hot potato", "dine and dash", "musical chairs").
-4. THE TWIST (1-2 beats): "But here's the part nobody's talking about..." - the hidden angle.
-5. HISTORY RHYMES (1-2 beats): a real past event that looks similar, and how it played out.
-6. SO WHAT (1 beat): what this means for normal people - no advice, just what to watch.
+2. WHO (1-2 beats): who this person or company was before it all happened, with one concrete detail.
+3. THE MOVE (2-3 beats): the decision, risk or mistake - explain it like you're talking to a smart friend,
+   with one funny casual analogy or label (like "hot potato", "all-in", "musical chairs").
+4. THE TWIST (1-2 beats): "But here's the part nobody tells you..." - the hidden angle behind the success
+   or failure.
+5. THE RESULT (1-2 beats): how it ended - the win or the loss, with a real number.
+6. THE LESSON (1 beat): the money lesson in one strong sentence.
 7. CLOSE (last beat): ask the viewer ONE direct question they will want to answer in the comments
    (e.g. "Would you have sold? Tell me in the comments."), then a short call to follow, e.g.
    "And follow for more." Vary the wording every time. Do not say the channel name.
@@ -297,7 +298,7 @@ def _guarantee_shape(story: dict) -> dict:
 
 def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dict:
     key = env("GEMINI_API_KEY")
-    trending = len(used_topics) % 10 < 7  # about 70% news, 30% evergreen
+    trending = False  # stories about real people and companies, not news
     research = _research(key, fmt, used_topics, trending)
     feedback = ""
     errors = []

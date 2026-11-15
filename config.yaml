@@ -9,11 +9,11 @@ channel:
   handle: "@monezic"
   # What the channel is about. Every video is written from this.
   niche: >
-    Money and the economy explained casually: what is really happening with markets,
-    housing, jobs, prices, banks, big companies, AI money and global economies - and why
-    it matters to normal people. About 70% of videos react to a real money/economy story
-    from the past 7 days; 30% are evergreen "how money really works" or history stories
-    that rhyme with today. Africa and the world both count.
+    Real money stories about PEOPLE and COMPANIES: who won big, who lost everything,
+    and what really happened behind their success or failure (e.g. Jeff Bezos, Steve Jobs,
+    Elon Musk, Aliko Dangote, Kodak, Nokia, Blockbuster, Enron). The one decision, risk,
+    mistake or habit that changed everything - told as a gripping story with a money lesson.
+    Mix world-famous stories with African success and failure stories.
   audience: "Young people (18-35) who want to understand money and build a better life."
   language: "English"
   # Safety rules the writer must always follow.
@@ -64,15 +64,15 @@ telegram:
 
 # Formats rotate so the channel never looks mass-produced.
 formats:
-  - name: "Something is breaking"
-    brief: "A system people trust (a market, a bank, housing, a currency, a big company) is quietly cracking. Show the warning signs, how it works, and what history says happens next."
-  - name: "Follow the money"
-    brief: "Who is really making or losing money in this story, and how. Expose the incentive nobody talks about."
-  - name: "History is rhyming"
-    brief: "Today's story looks a lot like a famous past event (2008, dot-com, 1929, a past currency crisis). Walk through the parallel and where it breaks."
-  - name: "The smart money is moving"
-    brief: "What insiders, billionaires, big funds or governments are doing with their money right now, and why regular people should pay attention."
-  - name: "The hidden cost"
-    brief: "A cost that is quietly hitting normal people (inflation, fees, debt, taxes, rent) explained simply, with a real example."
-  - name: "Africa money watch"
-    brief: "A real money/economy story from Africa (East Africa when possible) and what it means for people living there and for the world."
+  - name: "Behind the success"
+    brief: "What really happened behind a famous success (a billionaire or a giant company): the risk, the near-failure, the one move nobody talks about."
+  - name: "Rise and fall"
+    brief: "A person or company that rose very high and then lost almost everything. Show the warning signs everyone ignored."
+  - name: "The one decision"
+    brief: "One single decision that made or destroyed a fortune. Build up to the decision, then reveal what happened."
+  - name: "From nothing"
+    brief: "Someone who started with almost nothing and built a fortune. Focus on the specific, surprising thing they did differently."
+  - name: "The biggest mistake"
+    brief: "A famous money mistake (a company that said no to a deal, sold too early, ignored a trend) and what it cost."
+  - name: "African empire"
+    brief: "A real African entrepreneur or company: how it was built, the risk taken, the setbacks, and the lesson."
