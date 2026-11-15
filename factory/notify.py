@@ -49,6 +49,24 @@ def send_video(cfg: dict, video: Path, caption: str) -> None:
         log(f"Telegram video failed: {e}")
 
 
+def advice(error: str) -> str:
+    """Plain next step for the owner, so most problems are fixed in 2 minutes without anyone else."""
+    e = error.lower()
+    if any(k in e for k in ("unauthor", "401", "403", "token", "api key", "apikey", "expired")) and "buffer" in e:
+        return ("👉 Buffer key expired or rejected: buffer.com → Settings → API → create a new key, then GitHub → "
+                "repo Settings → Secrets → update BUFFER_API_KEY.")
+    if any(k in e for k in ("reconnect", "disconnected", "not connected", "channel", "permission", "authoriz")):
+        return "👉 Open Buffer and reconnect the account marked ❌ (log in again). Takes 2 minutes."
+    if "gemini" in e or "generativelanguage" in e or "429" in e or "quota" in e:
+        return ("👉 Gemini was busy or over its free daily limit. Nothing to do - it retries next run. "
+                "If this repeats for 2 days, check your key at aistudio.google.com.")
+    if "voice" in e or "kokoro" in e or "edge" in e:
+        return "👉 Voice service was down. Nothing to do - it retries next run."
+    if "telegram" in e:
+        return "👉 Check the Telegram bot is still an admin of the channel."
+    return "👉 Usually fixes itself next run. If it repeats 3 times in a row, send this message to Claude."
+
+
 def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
     e = html.escape
     lines = [f"<b>{e(story['title'])}</b>", f"<i>{e(story['topic'])}</i>", ""]
@@ -65,6 +83,7 @@ def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
                 lines.append(f"⏳ {name}: {e(r['error'])}")
             else:
                 lines.append(f"❌ {name}: {e(r['error'])}")
+                lines.append(e(advice(f"buffer {name} {r['error']}")))
     if story.get("plan_url"):
         lines += ["", f'📄 <a href="{e(story["plan_url"])}">Free plan page</a>']
     if run_url:

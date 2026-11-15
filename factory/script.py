@@ -15,6 +15,30 @@ MODELS = [
 ]
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+_FOUND: list[str] = []
+
+
+def _models() -> list[str]:
+    """MODELS first, then any newer free Flash models Google lists today - so a retired model never stops us."""
+    import os
+    if not _FOUND:
+        extra = []
+        try:
+            r = requests.get("https://generativelanguage.googleapis.com/v1beta/models",
+                             params={"key": os.environ.get("GEMINI_API_KEY", ""), "pageSize": 200}, timeout=30)
+            for m in r.json().get("models", []):
+                name = m.get("name", "").split("/")[-1]
+                if ("flash" in name and "generateContent" in m.get("supportedGenerationMethods", [])
+                        and not any(b in name for b in ("image", "tts", "audio", "live", "thinking", "exp"))):
+                    extra.append(name)
+        except Exception:  # noqa: BLE001
+            pass
+        def ver(n):
+            nums = re.findall(r"\d+(?:\.\d+)?", n)
+            return float(nums[0]) if nums else 0.0
+        extra = sorted(set(extra) - set(MODELS), key=ver, reverse=True)
+        _FOUND.extend(MODELS + extra[:6])
+    return _FOUND
 
 from .stickman import MOODS, PLACES, POSES, PROPS
 
@@ -149,7 +173,7 @@ Reply with ONLY a JSON object:
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "tools": [{"google_search": {}}],
             "generationConfig": {"temperature": 0.4, "maxOutputTokens": 1500}}
-    for model in MODELS:
+    for model in _models():
         try:
             r = requests.post(API.format(model=model),
                               headers={"x-goog-api-key": key, "Content-Type": "application/json"},
@@ -258,7 +282,7 @@ Minor rounding or simplification is fine (ok = true). Invented events, wrong peo
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "tools": [{"google_search": {}}],
             "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024}}
-    for model in MODELS:
+    for model in _models():
         try:
             r = requests.post(API.format(model=model),
                               headers={"x-goog-api-key": key, "Content-Type": "application/json"},
@@ -330,7 +354,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     best = None
     for attempt in range(1, 7):
         story = None
-        for model in MODELS:
+        for model in _models():
             try:
                 story = _clean(_call(model, key, _prompt(cfg, fmt, research, used_topics, feedback)))
                 story["model"] = model
@@ -380,7 +404,7 @@ def write_freebie(story: dict, kind: str) -> str:
                     "'Not financial advice - do your own research.'")
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": 0.5, "maxOutputTokens": 3000}}
-    for model in MODELS:
+    for model in _models():
         try:
             r = requests.post(API.format(model=model),
                               headers={"x-goog-api-key": key, "Content-Type": "application/json"},

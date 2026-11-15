@@ -10,7 +10,7 @@ import traceback
 from datetime import datetime, timezone
 
 from .common import DATA, WORK, load_config, log, read_json, write_json
-from .notify import report, send_text, send_video, send_whatsapp, whatsapp_report
+from .notify import advice, report, send_text, send_video, send_whatsapp, whatsapp_report
 from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_freebie, write_story
 from . import stickman
@@ -169,13 +169,13 @@ def run() -> int:
         return 0
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
-        msg = (f"❌ <b>Wealth Factory problem</b>\nWhile {html.escape(step)}:\n"
-               f"<code>{html.escape(str(e))[:700]}</code>")
+        msg = (f"❌ <b>Monezic problem</b>\nWhile {html.escape(step)}:\n"
+               f"<code>{html.escape(str(e))[:700]}</code>\n\n{html.escape(advice(step + ' ' + str(e)))}")
         if run_url:
             msg += f'\n\n<a href="{html.escape(run_url)}">Details</a>'
         try:
             send_text(cfg, msg)
-            send_whatsapp(f"❌ Monezic problem while {step}: {str(e)[:300]}")
+            send_whatsapp(f"❌ Monezic problem while {step}: {str(e)[:300]}\n{advice(step + ' ' + str(e))}")
         except Exception:  # noqa: BLE001
             pass
         return 1
