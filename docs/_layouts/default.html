@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title | default: site.title }} | Monezic</title>
+<link rel="icon" href="{{ '/assets/logo.png' | relative_url }}">
+<style>
+  :root { --ink:#0b0b0f; --gold:#ffd640; --green:#16a34a; --text:#1f2937; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; color:var(--text); background:#f6f7f9; line-height:1.6; }
+  header { background:var(--ink); color:#fff; padding:22px 20px; }
+  .bar { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:14px; }
+  .bar img { width:56px; height:56px; border-radius:50%; }
+  .brand { font-weight:900; font-size:28px; letter-spacing:1px; }
+  .tag { color:var(--gold); font-weight:700; font-size:13px; letter-spacing:2px; }
+  header a { color:inherit; text-decoration:none; }
+  main { max-width:760px; margin:24px auto; padding:0 16px; }
+  .card { background:#fff; border-radius:18px; padding:26px 22px; box-shadow:0 4px 18px rgba(0,0,0,.06); }
+  h1 { font-size:28px; line-height:1.25; margin-top:0; color:var(--ink); }
+  h2 { font-size:20px; margin-top:28px; color:var(--ink); border-left:5px solid var(--green); padding-left:10px; }
+  a { color:var(--green); font-weight:600; }
+  ul li { margin:6px 0; }
+  .follow { margin-top:28px; background:var(--ink); color:#fff; border-radius:16px; padding:18px; text-align:center; }
+  .follow b { color:var(--gold); }
+  footer { text-align:center; font-size:13px; color:#6b7280; margin:30px 0; }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a href="{{ '/' | relative_url }}"><img src="{{ '/assets/logo.png' | relative_url }}" alt="Monezic logo"></a>
+  <div><a href="{{ '/' | relative_url }}"><div class="brand">MONEZIC</div></a><div class="tag">REAL MONEY STORIES</div></div>
+</div></header>
+<main>
+  <div class="card">{{ content }}</div>
+  <div class="follow">Get a new free plan every week — follow <b>@monezic</b> on Instagram, TikTok and YouTube.</div>
+</main>
+<footer>© Monezic · Not financial advice — do your own research.</footer>
+</body>
+</html>

@@ -2,8 +2,8 @@
 title: Monezic Free Plans
 ---
 
-# Monezic - free business plans and money guides
+# Free business plans & money guides
 
-New ones every week. Follow Monezic on Instagram, TikTok and YouTube.
+Practical, free plans from our videos. New ones every week.
 
 <!-- list -->

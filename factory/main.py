@@ -34,8 +34,8 @@ def publish_freebie(cfg: dict, story: dict, kind: str, run_id: str) -> str:
     index = docs / "index.md"
     old = index.read_text(encoding="utf-8").split("<!-- list -->", 1)[-1] if index.exists() else ""
     index.write_text(
-        "---\ntitle: Monezic Free Plans\n---\n\n# Monezic - free business plans and money guides\n\n"
-        "New ones every week. Follow Monezic on Instagram, TikTok and YouTube.\n\n<!-- list -->\n"
+        "---\ntitle: Free Plans\n---\n\n# Free business plans & money guides\n\n"
+        "Practical, free plans from our videos. New ones every week.\n\n<!-- list -->\n"
         f"- [{label}: {title}](plans/{run_id}.html)\n" + old.lstrip("\n"), encoding="utf-8")
     url = f"{cfg['channel'].get('plans_url', '').rstrip('/')}/plans/{run_id}.html"
     log(f"Free {kind} page: {url}")
