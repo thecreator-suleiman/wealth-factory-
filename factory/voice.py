@@ -1,7 +1,7 @@
 """Step 2: turn the script into a human-sounding voiceover + word timings for captions.
 
 Main engine: Microsoft neural voices through the free `edge-tts` package.
-Emergency backup: Google's free `gTTS` voice (less natural) so a video still goes out.
+If the voice service is down, the post is skipped (no different voice is ever used).
 """
 import asyncio
 import re
@@ -76,38 +76,34 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
         text = text.replace(k, v)
     out = folder / "voice.mp3"
     v = cfg["voice"]
+    import re as _re
     import time as _t
-    for voice in (v["main"], v["backup"]):
-        tries = 6 if voice == v["main"] else 3
-        for attempt in range(tries):
-            if attempt:
-                _t.sleep(15 * attempt)
+    # Plain text only: odd symbols can make the voice service return no audio.
+    clean = _re.sub(r"[^A-Za-z0-9 .,!?'$%:;\-]", " ", text.replace("&", " and "))
+    clean = _re.sub(r"\s+", " ", clean).strip()
+    # Same male voice every time. Keep retrying for up to ~30 minutes;
+    # never switch to a different-sounding voice.
+    deadline = _t.time() + 30 * 60
+    attempt = 0
+    while True:
+        for voice in (v["main"], v["backup"]):
             try:
-                words = asyncio.run(_edge(text, voice, v["rate"], out, v.get("pitch", "+0Hz")))
+                words = asyncio.run(_edge(clean, voice, v["rate"], out, v.get("pitch", "+0Hz")))
                 total = audio_seconds(out)
-                if len(words) < len(text.split()) * 0.5:
+                if len(words) < len(clean.split()) * 0.5:
                     log("Word timings missing - estimating captions instead.")
-                    words = _estimate_timings(text, total)
+                    words = _estimate_timings(clean, total)
                 log(f"Voice ready: {voice}, {total:.1f}s, {len(words)} timed words")
                 return out, _fix_names(words), voice
             except Exception as e:  # noqa: BLE001
                 log(f"Voice {voice} failed (try {attempt + 1}): {e}")
-    # Emergency backup
-    log("Neural voice unavailable - using backup voice (gTTS).")
-    from gtts import gTTS
-
-    raw = folder / "voice_raw.mp3"
-    gTTS(text=text, lang="en", tld="com").save(str(raw))
-    subprocess.run(
-        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw),
-         "-filter:a", "atempo=1.15", str(out)],
-        check=True,
-    )
-    total = audio_seconds(out)
-    return out, _estimate_timings(text, total), "gTTS backup"
+        attempt += 1
+        if _t.time() > deadline:
+            raise RuntimeError("Andrew voice unavailable for 30 minutes - skipping this post to keep the voice consistent.")
+        _t.sleep(min(30 * attempt, 180))
 
 
-def fit_length(voice: Path, words: list, lo: float = 72.0, hi: float = 95.0):
+def fit_length(voice: Path, words: list, lo: float = 82.0, hi: float = 110.0):
     """Gently speed up / slow down the voice so the video lands between lo and hi seconds.
     (TikTok pays only for 60s+, and shorter keeps viewers watching.)"""
     total = audio_seconds(voice)
