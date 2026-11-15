@@ -280,7 +280,13 @@ QUESTIONS = [
 ]
 
 
-def _guarantee_shape(story: dict) -> dict:
+OFFER = {
+    "business": "Want the full free business plan? Follow Monezic on Instagram and comment PLAN.",
+    "tool": "Want my free step-by-step guide? Follow Monezic on Instagram and comment GUIDE.",
+}
+
+
+def _guarantee_shape(story: dict, kind: str = "story") -> dict:
     """Every video opens with 'stop scrolling' and ends with a comment question - no exceptions."""
     import random
     rnd = random.Random(story.get("topic", ""))
@@ -292,13 +298,17 @@ def _guarantee_shape(story: dict) -> dict:
         beats.insert(0, opener)
     if "?" not in beats[-1]["text"]:
         beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
+    if kind in OFFER:
+        beats.append({"text": OFFER[kind],
+                      "characters": [{"pose": "point", "mood": "happy", "label": ""}],
+                      "prop": "document", "big_text": "FREE", "headline": ""})
     story["script"] = " ".join(b["text"] for b in beats)
     return story
 
 
 def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dict:
     key = env("GEMINI_API_KEY")
-    trending = False  # stories about real people and companies, not news
+    trending = fmt.get("kind") == "news"
     research = _research(key, fmt, used_topics, trending)
     feedback = ""
     errors = []
@@ -328,10 +338,45 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
         if not ok and attempt < 6:
             feedback = ("\nYOUR LAST SCRIPT HAD FACTUAL ERRORS - FIX THEM (or drop those claims):\n- " + "\n- ".join(probs))
             continue
-        story = _guarantee_shape(story)
+        story = _guarantee_shape(story, fmt.get("kind", "story"))
         log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats)")
         return story
     if best:
         log("Using the closest story (length slightly off target).")
-        return _guarantee_shape(best)
+        return _guarantee_shape(best, fmt.get("kind", "story"))
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
+
+
+def write_freebie(story: dict, kind: str) -> str:
+    """Writes the free business plan / tool guide promised in the video (Markdown)."""
+    key = env("GEMINI_API_KEY")
+    if kind == "business":
+        ask = (f"Write a free, practical starter business plan for this idea: {story['topic']}.\n"
+               "Sections: The idea in one line; Who pays and why; Start-up cost (low/realistic, in USD); "
+               "Step-by-step: first 30 days; How to get the first 10 customers; Simple pricing example; "
+               "Risks and how to avoid them; Free tools to use. Be honest - no income promises.")
+    else:
+        ask = (f"Write a free step-by-step guide for this free money tool: {story['topic']}.\n"
+               "Sections: What it is; Is it really free (and the catch); How to sign up; "
+               "5 steps to get value in your first week; Tips; Free alternatives. "
+               "Include the official website address only if you are certain of it.")
+    prompt = ask + ("\nAudience: young people in Africa and worldwide. Plain English, short sentences, "
+                    "Markdown headings and bullet lists, under 700 words. End with: "
+                    "'Not financial advice - do your own research.'")
+    body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.5, "maxOutputTokens": 3000}}
+    for model in MODELS:
+        try:
+            r = requests.post(API.format(model=model),
+                              headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                              json=body, timeout=240)
+            if r.status_code != 200:
+                raise RuntimeError(f"HTTP {r.status_code}")
+            parts = r.json()["candidates"][0]["content"]["parts"]
+            txt = "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
+            if len(txt) > 400:
+                log(f"Free {kind} guide written ({model})")
+                return txt
+        except Exception as e:  # noqa: BLE001
+            log(f"Guide writer {model} unavailable: {e}")
+    return ""

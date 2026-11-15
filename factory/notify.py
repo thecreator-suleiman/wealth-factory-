@@ -65,6 +65,8 @@ def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
                 lines.append(f"⏳ {name}: {e(r['error'])}")
             else:
                 lines.append(f"❌ {name}: {e(r['error'])}")
+    if story.get("plan_url"):
+        lines += ["", f'📄 <a href="{e(story["plan_url"])}">Free plan page</a>']
     if run_url:
         lines += ["", f'<a href="{e(run_url)}">Details</a>']
     return "\n".join(lines)

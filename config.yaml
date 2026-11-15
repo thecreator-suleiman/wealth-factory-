@@ -7,6 +7,8 @@
 channel:
   name: "Monezic"
   handle: "@monezic"
+  # Free plans/guides are published here (GitHub Pages, folder docs/)
+  plans_url: "https://thecreator-suleiman.github.io/wealth-factory-"
   # What the channel is about. Every video is written from this.
   niche: >
     Real money stories about PEOPLE and COMPANIES: who won big, who lost everything,
@@ -63,16 +65,34 @@ telegram:
 # Needs 2 GitHub secrets: WHATSAPP_PHONE and CALLMEBOT_API_KEY. Skipped if missing.
 
 # Formats rotate so the channel never looks mass-produced.
+# What each slot in a 10-video cycle is (60% stories, 20% business ideas, 10% free tools, 10% news).
+mix: [story, business, story, story, tool, story, story, news, story, business]
+
 formats:
-  - name: "Behind the success"
+  - kind: story
+    name: "Behind the success"
     brief: "What really happened behind a famous success (a billionaire or a giant company): the risk, the near-failure, the one move nobody talks about."
-  - name: "Rise and fall"
+  - kind: story
+    name: "Rise and fall"
     brief: "A person or company that rose very high and then lost almost everything. Show the warning signs everyone ignored."
-  - name: "The one decision"
+  - kind: story
+    name: "The one decision"
     brief: "One single decision that made or destroyed a fortune. Build up to the decision, then reveal what happened."
-  - name: "From nothing"
+  - kind: story
+    name: "From nothing"
     brief: "Someone who started with almost nothing and built a fortune. Focus on the specific, surprising thing they did differently."
-  - name: "The biggest mistake"
+  - kind: story
+    name: "The biggest mistake"
     brief: "A famous money mistake (a company that said no to a deal, sold too early, ignored a trend) and what it cost."
-  - name: "African empire"
+  - kind: story
+    name: "African empire"
     brief: "A real African entrepreneur or company: how it was built, the risk taken, the setbacks, and the lesson."
+  - kind: business
+    name: "Business you can start"
+    brief: "One realistic, low-cost business idea a young person can start this month (with under $200 where possible): why it works, real examples of people doing it, the first 3 steps. No get-rich-quick promises."
+  - kind: tool
+    name: "Free money tool"
+    brief: "One genuinely FREE, well-known online tool or app for money (budgeting, saving, investing research, invoicing, learning finance): what it does, a real use case, and the catch. Only real tools that exist today."
+  - kind: news
+    name: "Money news"
+    brief: "One real money/economy story from the last 7 days (markets, prices, jobs, a big company, AI money) explained casually, and what it means for normal people."

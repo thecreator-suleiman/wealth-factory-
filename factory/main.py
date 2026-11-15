@@ -12,12 +12,34 @@ from datetime import datetime, timezone
 from .common import DATA, WORK, load_config, log, read_json, write_json
 from .notify import report, send_text, send_video, send_whatsapp, whatsapp_report
 from .publish import host_video, post_everywhere, posting_enabled
-from .script import write_story
+from .script import write_freebie, write_story
 from . import stickman
 from .video import FONT_DIR, finish_video
 from .voice import fit_length, make_voice
 
 HISTORY = DATA / "history.json"
+
+
+def publish_freebie(cfg: dict, story: dict, kind: str, run_id: str) -> str:
+    """Saves the free plan/guide as a web page in docs/ (GitHub Pages) and updates the index."""
+    text = write_freebie(story, kind)
+    if not text:
+        return ""
+    docs = DATA.parent / "docs"
+    (docs / "plans").mkdir(parents=True, exist_ok=True)
+    title = story["topic"]
+    label = "Free business plan" if kind == "business" else "Free guide"
+    (docs / "plans" / f"{run_id}.md").write_text(
+        f"---\ntitle: \"{label}: {title}\"\n---\n\n# {label}: {title}\n\n{text}\n", encoding="utf-8")
+    index = docs / "index.md"
+    old = index.read_text(encoding="utf-8").split("<!-- list -->", 1)[-1] if index.exists() else ""
+    index.write_text(
+        "---\ntitle: Monezic Free Plans\n---\n\n# Monezic - free business plans and money guides\n\n"
+        "New ones every week. Follow Monezic on Instagram, TikTok and YouTube.\n\n<!-- list -->\n"
+        f"- [{label}: {title}](plans/{run_id}.html)\n" + old.lstrip("\n"), encoding="utf-8")
+    url = f"{cfg['channel'].get('plans_url', '').rstrip('/')}/plans/{run_id}.html"
+    log(f"Free {kind} page: {url}")
+    return url
 
 
 def wait_for_slot(cfg: dict) -> None:
@@ -71,9 +93,13 @@ def run() -> int:
 
     step = "starting"
     try:
-        fmt = cfg["formats"][len(history) % len(cfg["formats"])]
+        mix = cfg.get("mix") or ["story"]
+        kind = mix[len(history) % len(mix)]
+        options = [f for f in cfg["formats"] if f.get("kind", "story") == kind] or cfg["formats"]
+        done_same_kind = sum(1 for h in history if h.get("kind", "story") == kind)
+        fmt = options[done_same_kind % len(options)]
         style = ""
-        log(f"Format: {fmt['name']}")
+        log(f"Format: {fmt['name']} ({kind})")
 
         step = "writing the story"
         story = write_story(cfg, fmt, style, [h["topic"] for h in history])
@@ -92,6 +118,14 @@ def run() -> int:
 
         step = "building the video"
         video = finish_video(cfg, scenes, voice, words, story["hook_text"], total, total + end_card, folder)
+
+        plan_url = ""
+        if kind in ("business", "tool"):
+            step = "writing the free plan"
+            plan_url = publish_freebie(cfg, story, kind, run_id)
+            story["plan_url"] = plan_url
+            if plan_url:
+                story["caption"] += f"\n\nFree {'business plan' if kind == 'business' else 'guide'}: {plan_url}"
 
         results = None
         video_url = ""
@@ -116,6 +150,8 @@ def run() -> int:
                 "topic": story["topic"],
                 "title": story["title"],
                 "format": fmt["name"],
+                "kind": kind,
+                "plan": plan_url,
                 "voice": voice_name,
                 "seconds": round(total, 1),
                 "video": video_url,
