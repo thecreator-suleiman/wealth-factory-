@@ -276,8 +276,9 @@ OPENERS = [
 QUESTIONS = [
     "What do you think? Tell me in the comments.",
     "Would you have seen this coming? Drop it in the comments.",
-    "Which side are you on? Tell me below.",
+    "Which side are you on?",
 ]
+FOLLOW = "Comment below, and follow Monezic so you can find us again."
 
 
 OFFER = {
@@ -298,6 +299,8 @@ def _guarantee_shape(story: dict, kind: str = "story") -> dict:
         beats.insert(0, opener)
     if "?" not in beats[-1]["text"]:
         beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
+    if "follow monezic" not in beats[-1]["text"].lower():
+        beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + FOLLOW
     if kind in OFFER:
         beats.append({"text": OFFER[kind],
                       "characters": [{"pose": "point", "mood": "happy", "label": ""}],
