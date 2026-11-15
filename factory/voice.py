@@ -76,8 +76,12 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
         text = text.replace(k, v)
     out = folder / "voice.mp3"
     v = cfg["voice"]
+    import time as _t
     for voice in (v["main"], v["backup"]):
-        for attempt in range(2):
+        tries = 6 if voice == v["main"] else 3
+        for attempt in range(tries):
+            if attempt:
+                _t.sleep(15 * attempt)
             try:
                 words = asyncio.run(_edge(text, voice, v["rate"], out, v.get("pitch", "+0Hz")))
                 total = audio_seconds(out)
@@ -103,14 +107,14 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
     return out, _estimate_timings(text, total), "gTTS backup"
 
 
-def fit_length(voice: Path, words: list, lo: float = 61.0, hi: float = 80.0):
+def fit_length(voice: Path, words: list, lo: float = 72.0, hi: float = 95.0):
     """Gently speed up / slow down the voice so the video lands between lo and hi seconds.
     (TikTok pays only for 60s+, and shorter keeps viewers watching.)"""
     total = audio_seconds(voice)
     if lo <= total <= hi:
         return voice, words, total
     target = hi - 4 if total > hi else lo + 2
-    factor = min(max(total / target, 0.88), 1.25)
+    factor = min(max(total / target, 0.85), 1.25)
     out = voice.with_name("voice_fit.mp3")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(voice),
                     "-filter:a", f"atempo={factor:.4f}", str(out)], check=True)

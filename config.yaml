@@ -23,10 +23,10 @@ channel:
     - "Never give personal financial or investment advice. Teach through the story only."
     - "No get-rich-quick promises, no gambling, no crypto pumping, no scams."
     - "Urgent and skeptical is good; panic, doom predictions and fake certainty are not. Never predict exact crashes or dates."
-    - "Never open with filler like 'Stop scrolling', 'Give me one minute', 'Did you know', 'Hey guys' or 'In this video'. Rush straight into the story."
+    - "Do not write 'stop scrolling' or 'give me one minute' - the system adds that opening line itself. Beat 1 is the hook right after it."
 
 video:
-  target_seconds: 70        # 61-80s keeps TikTok rewards eligibility (needs 60s+)
+  target_seconds: 85        # about 1:25 per video (TikTok pays for 60s+)
   width: 1080
   height: 1920
   fps: 30

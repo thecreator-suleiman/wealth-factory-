@@ -266,6 +266,35 @@ Minor rounding or simplification is fine (ok = true). Invented events, wrong peo
     return True, []
 
 
+OPENERS = [
+    "Stop scrolling. Give me one minute.",
+    "Stop scrolling, and give me sixty seconds.",
+    "Wait, don't scroll. Give me one minute.",
+    "Stop. Give me one minute, this matters.",
+]
+QUESTIONS = [
+    "What do you think? Tell me in the comments.",
+    "Would you have seen this coming? Drop it in the comments.",
+    "Which side are you on? Tell me below.",
+]
+
+
+def _guarantee_shape(story: dict) -> dict:
+    """Every video opens with 'stop scrolling' and ends with a comment question - no exceptions."""
+    import random
+    rnd = random.Random(story.get("topic", ""))
+    opener = {"text": rnd.choice(OPENERS),
+              "characters": [{"pose": "present", "mood": "happy", "label": ""}],
+              "prop": "clock", "big_text": "", "headline": ""}
+    beats = story["beats"]
+    if not re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I):
+        beats.insert(0, opener)
+    if "?" not in beats[-1]["text"]:
+        beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
+    story["script"] = " ".join(b["text"] for b in beats)
+    return story
+
+
 def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dict:
     key = env("GEMINI_API_KEY")
     trending = len(used_topics) % 10 < 7  # about 70% news, 30% evergreen
@@ -273,7 +302,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     feedback = ""
     errors = []
     best = None
-    for attempt in range(1, 5):
+    for attempt in range(1, 7):
         story = None
         for model in MODELS:
             try:
@@ -288,17 +317,20 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
         issues = _problems(story, cfg)
         if issues:
             log(f"Story needs another try: {issues}")
-            if len(story["beats"]) >= 8 and best is None:
+            only_length = all("spoken words" in i for i in issues)
+            words = len(story["script"].split())
+            if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.0:
                 best = story
             feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(issues)
             continue
         ok, probs = _fact_check(key, story)
-        if not ok and attempt < 4:
+        if not ok and attempt < 6:
             feedback = ("\nYOUR LAST SCRIPT HAD FACTUAL ERRORS - FIX THEM (or drop those claims):\n- " + "\n- ".join(probs))
             continue
+        story = _guarantee_shape(story)
         log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats)")
         return story
     if best:
         log("Using the closest story (length slightly off target).")
-        return best
+        return _guarantee_shape(best)
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
