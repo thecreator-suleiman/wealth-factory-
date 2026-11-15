@@ -50,5 +50,31 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-15T10:03+00:00",
+    "topic": "AI growth fears echo dot-com",
+    "title": "AI Mania Is Breaking",
+    "format": "History is rhyming",
+    "voice": "en-US-AndrewNeural",
+    "seconds": 55.3,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261115-1003.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=7HFZHbee6uo",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Dfwh58EEWfs/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7708337802647325972",
+        "error": ""
+      }
+    }
   }
 ]
