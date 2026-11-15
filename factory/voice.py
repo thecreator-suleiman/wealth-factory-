@@ -1,7 +1,7 @@
 """Step 2: turn the script into a human-sounding voiceover + word timings for captions.
 
 Main engine: Microsoft neural voices through the free `edge-tts` package.
-If the voice service is down, the post is skipped (no different voice is ever used).
+If Microsoft's voice service is down, an offline male voice (Piper Ryan) is used.
 """
 import asyncio
 import re
@@ -83,7 +83,7 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
     clean = _re.sub(r"\s+", " ", clean).strip()
     # Same male voice every time. Keep retrying for up to ~30 minutes;
     # never switch to a different-sounding voice.
-    deadline = _t.time() + 30 * 60
+    deadline = _t.time() + 12 * 60
     attempt = 0
     while True:
         for voice in (v["main"], v["backup"]):
@@ -99,8 +99,34 @@ def make_voice(cfg: dict, text: str, folder: Path) -> tuple[Path, list, str]:
                 log(f"Voice {voice} failed (try {attempt + 1}): {e}")
         attempt += 1
         if _t.time() > deadline:
-            raise RuntimeError("Andrew voice unavailable for 30 minutes - skipping this post to keep the voice consistent.")
-        _t.sleep(min(30 * attempt, 180))
+            break
+        _t.sleep(min(30 * attempt, 120))
+    # Backup male voice that runs offline on GitHub (no Microsoft service needed).
+    log("Andrew voice unavailable - using backup male voice (Piper Ryan).")
+    wav = folder / "voice_piper.wav"
+    _piper(clean, wav)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
+                    "-filter:a", "atempo=1.05", str(out)], check=True)
+    total = audio_seconds(out)
+    return out, _fix_names(_estimate_timings(clean, total)), "Piper Ryan (backup male)"
+
+
+def _piper(text: str, wav: Path) -> None:
+    import wave
+    import requests
+    base = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high/"
+    mdir = Path("work/piper"); mdir.mkdir(parents=True, exist_ok=True)
+    for f in ("en_US-ryan-high.onnx", "en_US-ryan-high.onnx.json"):
+        if not (mdir / f).exists():
+            r = requests.get(base + f, timeout=300); r.raise_for_status()
+            (mdir / f).write_bytes(r.content)
+    from piper import PiperVoice
+    pv = PiperVoice.load(str(mdir / "en_US-ryan-high.onnx"))
+    with wave.open(str(wav), "wb") as wf:
+        if hasattr(pv, "synthesize_wav"):
+            pv.synthesize_wav(text, wf)
+        else:
+            pv.synthesize(text, wf)
 
 
 def fit_length(voice: Path, words: list, lo: float = 82.0, hi: float = 110.0):
