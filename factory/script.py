@@ -299,6 +299,7 @@ def _guarantee_shape(story: dict, kind: str = "story") -> dict:
         beats.insert(0, opener)
     if "?" not in beats[-1]["text"]:
         beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
+    beats[-1]["text"] = re.sub(r"\s*(Tell (me|us)|Let (me|us) know|Drop it|Comment)[^.?!]*(below|comments?)[.!]?", "", beats[-1]["text"], flags=re.I).strip()
     if "follow monezic" not in beats[-1]["text"].lower():
         beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + FOLLOW
     if kind in OFFER:
