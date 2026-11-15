@@ -100,8 +100,13 @@ Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds
 Short punchy sentences. Sound like a person, not a news anchor.
 
 FOR EACH BEAT'S SCENE:
-- "characters": 0-3 stick figures. Pose + mood act out the sentence (losing money = sad, a big win = cheer,
-  a decision = think, a deal = hold + another figure, a reveal = shock, explaining = present, panic = run).
+- "characters": 0-3 stick figures. The pose is an ACTION that literally acts out what the voice says in that
+  sentence, like a mime: losing everything = fall or kneel or cry, getting rich = fly_money or count_money or lift,
+  spending/wasting = throw_money, working hard = dig or carry or type, a deal = handshake or sign (2 figures facing),
+  a call = phone, news = read, starting out = walk, escaping/fast growth = run or climb, a mistake = facepalm,
+  "nobody knows" = shrug, mocking = laugh, begging banks/investors = beg, pride = confident, a crash = fall or panic,
+  giving/paying = give, celebrating = cheer or dance or high_five or clap. Use a different action in every beat;
+  use many different actions across the video. Use 2 figures when two sides interact.
 - "label": short name (max 12 letters) if the figure IS a real person, company, country or group
   ("FED", "BANKS", "YOU", "CHINA", "INVESTORS"), otherwise "". Use labels often so viewers follow who is who.
 - "prop": the one object that best shows the sentence, or "none".

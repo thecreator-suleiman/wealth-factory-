@@ -18,7 +18,11 @@ GREY = (0.55, 0.55, 0.58)
 RED = (0.86, 0.15, 0.15)
 LINE = 13
 
-POSES = ["stand", "walk", "run", "point", "cheer", "sad", "think", "shock", "sit", "hold", "present", "angry"]
+POSES = ["stand", "walk", "run", "point", "cheer", "sad", "think", "shock", "sit", "hold", "present", "angry",
+         "wave", "clap", "facepalm", "shrug", "count_money", "throw_money", "dig", "carry", "push", "kneel",
+         "fall", "jump", "dance", "type", "phone", "sign", "handshake", "high_five", "cry", "laugh", "explain",
+         "bow", "salute", "read", "lift", "shake_fist", "panic", "sneak", "tired", "give", "climb", "confident",
+         "beg", "lie_down", "fly_money"]
 MOODS = ["happy", "sad", "neutral", "shocked", "angry", "worried"]
 PROPS = ["none", "money_bag", "coins", "cash", "chart_up", "chart_down", "arrow_up", "arrow_down",
          "laptop", "phone", "house", "car", "building", "shop", "piggy_bank", "briefcase",
@@ -110,106 +114,315 @@ def _limb(ctx, x, y, a1, l1, a2, l2):
     return hx, hy
 
 
+def _A(**k):
+    a = dict(legs=[(-10, 0), (10, 0)], arms=[(-25, -5), (25, 5)], dy=0.0, lean=0.0, tilt=0.0,
+             dx=0.0, rot=0.0, fx=(), mood=None)
+    a.update(k)
+    return a
+
+
+def _ease(t, dur):
+    return ease_out(min(max(t / dur, 0.0), 1.0))
+
+
+def action(name: str, t: float, d: int, s: float) -> dict:
+    """~45 base actions. Angles: 0 = straight down, + = toward facing side (front arm uses d)."""
+    S = math.sin
+    if name == "walk":
+        sw = S(t * 7) * 28
+        return _A(legs=[(sw, sw * 0.3), (-sw, -sw * 0.3)],
+                  arms=[(-sw * 0.8, -sw * 0.4 - 10), (sw * 0.8, sw * 0.4 + 10)],
+                  dx=(-160 + _ease(t, 2.2) * 160) * d * s)
+    if name == "run":
+        sw = S(t * 12) * 45
+        return _A(legs=[(sw, sw * 0.9 + 20), (-sw, -sw * 0.9 + 20)], arms=[(-sw - 10, -90), (sw + 10, 90)],
+                  lean=10 * d, dx=(-260 + _ease(t, 1.4) * 260) * d * s, fx=("speed",))
+    if name == "point":
+        return _A(arms=[(-15, -5), (95 * d, (95 + S(t * 4) * 6) * d)])
+    if name == "cheer":
+        wv = S(t * 9) * 18
+        return _A(arms=[(-125 + wv, -145 + wv), (125 - wv, 145 - wv)], dy=-abs(S(t * 5)) * 18 * s, fx=("sparkle",))
+    if name == "sad":
+        return _A(arms=[(-8, 0), (8, 0)], tilt=22 * s, lean=6 * d, fx=("tear",))
+    if name == "think":
+        return _A(arms=[(-40, 40), (35 * d, 165 * d)], fx=("question",))
+    if name == "shock":
+        j = S(t * 30) * 3
+        return _A(arms=[(-130 + j, -100), (130 - j, 100)], legs=[(-22, 0), (22, 0)], fx=("shock",))
+    if name == "sit":
+        return _A(dy=270 * s, legs=[(80 * d, 100 * d), (95 * d, 90 * d)], arms=[(-35, -20), (35 * d, 60 * d)])
+    if name == "hold":
+        return _A(arms=[(70 * d, 120 * d), (85 * d, 125 * d)])
+    if name == "present":
+        return _A(arms=[(-15, -5), (115 * d, (128 + S(t * 4) * 8) * d)])
+    if name == "angry":
+        return _A(arms=[(-60, 60), (60, -60)], legs=[(-18, 0), (18, 0)], fx=("steam",))
+    if name == "wave":
+        w = S(t * 10) * 25
+        return _A(arms=[(-15, -5), (150 * d, (170 + w) * d)])
+    if name == "clap":
+        k = abs(S(t * 9))
+        return _A(arms=[(-(60 + 25 * k), -100), ((60 + 25 * k) * d, 100 * d)], fx=("sparkle",))
+    if name == "facepalm":
+        return _A(arms=[(-10, 0), (40 * d, 175 * d)], tilt=10 * s)
+    if name == "shrug":
+        k = abs(S(t * 3))
+        return _A(arms=[(-45 - 10 * k, -140), (45 + 10 * k, 140)], tilt=-6 * s * k, dy=-k * 8)
+    if name == "count_money":
+        f = S(t * 14) * 10
+        return _A(arms=[(55 * d, (110 + f) * d), (70 * d, 125 * d)], tilt=8 * s, fx=("cash_hand",))
+    if name == "throw_money":
+        k = (t * 1.6) % 1
+        return _A(arms=[(-30, -10), ((40 + 140 * k) * d, (60 + 120 * k) * d)], fx=("bills",))
+    if name == "dig":
+        k = S(t * 4)
+        return _A(arms=[((60 + 30 * k) * d, (100 + 40 * k) * d), ((50 + 30 * k) * d, (80 + 40 * k) * d)],
+                  lean=(12 + 8 * k) * d, fx=("shovel",))
+    if name == "carry":
+        return _A(arms=[(-150, -175), (150, 175)], dy=S(t * 7) * 6, fx=("box_up",),
+                  legs=[(S(t * 7) * 15, 0), (-S(t * 7) * 15, 0)])
+    if name == "push":
+        return _A(arms=[(80 * d, 95 * d), (85 * d, 100 * d)], lean=22 * d,
+                  legs=[(-30 * d, -10 * d), (5 * d, 0)], fx=("box_front",))
+    if name == "kneel":
+        return _A(dy=120 * s, legs=[(70 * d, 0), (-20 * d, -85 * d)], arms=[(-10, 0), (15 * d, 0)], tilt=18 * s)
+    if name == "fall":
+        return _A(rot=88 * _ease(t, 0.7) * d, arms=[(-160, -175), (160, 175)], legs=[(-12, -5), (12, 5)],
+                  fx=("sweat",) if t > 0.6 else ())
+    if name == "jump":
+        k = abs(S(t * 4.5))
+        return _A(dy=-k * 120 * s, legs=[(-20 - 20 * k, 30 * k), (20 + 20 * k, -30 * k)],
+                  arms=[(-140, -150), (140, 150)])
+    if name == "dance":
+        k = S(t * 8)
+        return _A(arms=[(-100 + 40 * k, -150), (60 + 40 * k, 20)], legs=[(-15 + 20 * k, 0), (25 + 10 * k, 30 * k)],
+                  lean=8 * k, dy=-abs(k) * 15, fx=("notes",))
+    if name == "type":
+        k = abs(S(t * 16)) * 8
+        return _A(dy=270 * s, legs=[(80 * d, 100 * d), (95 * d, 90 * d)],
+                  arms=[(55 * d, (95 + k) * d), (60 * d, (90 - k) * d)], fx=("laptop",))
+    if name == "phone":
+        return _A(arms=[(-15, -5), (30 * d, 170 * d)], tilt=6 * s * S(t * 2), fx=("phone",))
+    if name == "sign":
+        return _A(arms=[(60 * d, 100 * d), (55 * d, (95 + S(t * 12) * 12) * d)], tilt=14 * s, fx=("paper",))
+    if name == "handshake":
+        k = S(t * 9) * 10
+        return _A(arms=[(-15, -5), (70 * d, (95 + k) * d)], fx=("deal",))
+    if name == "high_five":
+        return _A(arms=[(-15, -5), (150 * d, 160 * d)], dy=-abs(S(t * 3)) * 10, fx=("sparkle",))
+    if name == "cry":
+        return _A(arms=[(35 * d, 165 * d), (-35 * d, -165 * d)], tilt=16 * s, dy=S(t * 9) * 3, fx=("tear", "tear2"))
+    if name == "laugh":
+        k = S(t * 14)
+        return _A(arms=[(-20, 70), (20, -70)], lean=-10 * d + k * 2, tilt=-10 * s, fx=("haha",), mood="happy")
+    if name == "explain":
+        k = S(t * 5)
+        return _A(arms=[(-(80 + 20 * k), -120), ((80 - 20 * k) * d, (120 + 15 * k) * d)])
+    if name == "bow":
+        k = _ease(t, 0.6)
+        return _A(lean=40 * k * d, arms=[(10 * d, 0), (20 * d, 10 * d)])
+    if name == "salute":
+        return _A(arms=[(-10, 0), (110 * d, 200 * d)], legs=[(-4, 0), (4, 0)])
+    if name == "read":
+        return _A(arms=[(75 * d, 140 * d), (85 * d, 150 * d)], tilt=8 * s, fx=("newspaper",))
+    if name == "lift":
+        k = abs(S(t * 3))
+        return _A(arms=[(-150 + 30 * k, -180), (150 - 30 * k, 180)], legs=[(-24, 0), (24, 0)], fx=("bag_up",))
+    if name == "shake_fist":
+        k = S(t * 14) * 10
+        return _A(arms=[(-20, -10), (140 * d, (150 + k) * d)], fx=("steam",))
+    if name == "panic":
+        j = S(t * 25) * 4
+        return _A(arms=[(-150 + j, 150), (150 - j, -150)], dx=S(t * 6) * 40, fx=("sweat",), mood="worried")
+    if name == "sneak":
+        k = S(t * 5) * 18
+        return _A(dy=60 * s, lean=18 * d, legs=[(k, 40), (-k, 40)], arms=[(60 * d, 140 * d), (30 * d, 110 * d)],
+                  dx=(-120 + _ease(t, 2.5) * 120) * d * s)
+    if name == "tired":
+        return _A(lean=10 * d, tilt=26 * s, arms=[(-4, 0), (4, 0)], dy=S(t * 1.5) * 4, fx=("zzz",))
+    if name == "give":
+        k = _ease(t, 0.6)
+        return _A(arms=[(-15, -5), ((20 + 60 * k) * d, (30 + 70 * k) * d)], fx=("coin_hand",))
+    if name == "climb":
+        k = S(t * 5)
+        return _A(arms=[(-150 + 20 * k, -170), (150 + 20 * k, 170)], legs=[(-25 + 25 * k, 30), (25 + 25 * k, -30)],
+                  dy=-(t * 40 % 120) * s, fx=("ladder",))
+    if name == "confident":
+        return _A(arms=[(70 * d, -60 * d), (-70 * d, 60 * d)], legs=[(-16, 0), (16, 0)], tilt=-6 * s,
+                  mood="happy", fx=("shine",))
+    if name == "beg":
+        return _A(dy=120 * s, legs=[(70 * d, 0), (-20 * d, -85 * d)], arms=[(130 * d, 150 * d), (120 * d, 160 * d)],
+                  mood="worried")
+    if name == "lie_down":
+        return _A(rot=90 * d, arms=[(-20, -5), (20, 5)], fx=("zzz",))
+    if name == "fly_money":  # rich and happy, money raining
+        return _A(arms=[(-125, -145), (125, 145)], dy=-abs(S(t * 4)) * 10, fx=("rain_money",), mood="happy")
+    return _A(arms=[(-25 + S(t * 2) * 3, -5), (25 - S(t * 2) * 3, 5)])  # stand / unknown
+
+
+def _fx(ctx, name, hx, hy, hands, t, d, s, x):
+    k = pop(t, 0.15)
+    if k <= 0:
+        return
+    if name == "question":
+        ctx.save(); ctx.translate(hx + 95 * d * s, hy - 110 * s); ctx.scale(k, k)
+        text(ctx, "?", 0, 0, 110 * s, DARK_GREEN); ctx.restore()
+    elif name == "shock":
+        for i in range(3):
+            a = math.radians(-60 + i * 60)
+            ctx.move_to(hx + math.sin(a) * 76 * s, hy - math.cos(a) * 76 * s)
+            ctx.line_to(hx + math.sin(a) * 110 * s, hy - math.cos(a) * 110 * s)
+            stroke(ctx, INK, 7)
+    elif name in ("tear", "tear2"):
+        side = 1 if name == "tear" else -1
+        ctx.arc(hx + 30 * d * s * side, hy + 20 * s + (t * 60 % 50), 7 * s, 0, 2 * math.pi)
+        ctx.set_source_rgb(0.35, 0.6, 0.95); ctx.fill()
+    elif name == "sweat":
+        for i in range(2):
+            yy = hy - 30 * s + ((t * 80 + i * 30) % 60)
+            ctx.arc(hx + (62 + i * 14) * s * (1 if i else -1), yy, 8 * s, 0, 2 * math.pi)
+            ctx.set_source_rgb(0.35, 0.6, 0.95); ctx.fill()
+    elif name == "steam":
+        for i in (-1, 1):
+            o = (t * 50) % 30
+            ctx.arc(hx + i * 50 * s, hy - 80 * s - o, 12 * s, 0, 2 * math.pi)
+            stroke(ctx, GREY, 5)
+    elif name == "sparkle":
+        for i in range(4):
+            a = t * 2 + i * 1.57
+            px, py = hx + math.cos(a) * 120 * s, hy + math.sin(a) * 90 * s
+            r = 14 * s * (0.6 + 0.4 * abs(math.sin(t * 6 + i)))
+            ctx.move_to(px - r, py); ctx.line_to(px + r, py); ctx.move_to(px, py - r); ctx.line_to(px, py + r)
+            stroke(ctx, GREEN, 5)
+    elif name == "shine":
+        for i in range(5):
+            a = math.radians(-150 + i * 30)
+            ctx.move_to(hx + math.cos(a) * 80 * s, hy + math.sin(a) * 80 * s)
+            ctx.line_to(hx + math.cos(a) * (100 + 8 * math.sin(t * 6)) * s, hy + math.sin(a) * (100 + 8 * math.sin(t * 6)) * s)
+            stroke(ctx, (1, 0.78, 0.15), 6)
+    elif name == "speed":
+        for i in range(3):
+            yy = hy + (120 + i * 70) * s
+            ctx.move_to(x - (90 + i * 20) * d * s, yy); ctx.line_to(x - (190 + i * 20) * d * s, yy)
+            stroke(ctx, GREY, 6)
+    elif name == "zzz":
+        o = (t * 30) % 60
+        text(ctx, "z", hx + 70 * d * s, hy - 60 * s - o, 50 * s, GREY)
+        text(ctx, "Z", hx + 110 * d * s, hy - 110 * s - o, 70 * s, GREY)
+    elif name == "haha":
+        text(ctx, "HA HA", hx + 170 * d * s, hy + 10 * s + math.sin(t * 14) * 6, 56 * s, DARK_GREEN)
+    elif name == "notes":
+        for i in range(2):
+            o = (t * 60 + i * 40) % 80
+            nx, ny = hx + (90 + i * 50) * d * s, hy - 40 * s - o
+            ctx.arc(nx, ny, 12 * s, 0, 2 * math.pi); ctx.set_source_rgb(*DARK_GREEN); ctx.fill()
+            ctx.move_to(nx + 11 * s, ny); ctx.line_to(nx + 11 * s, ny - 45 * s); ctx.line_to(nx + 30 * s, ny - 35 * s)
+            stroke(ctx, DARK_GREEN, 5)
+    elif name == "deal":
+        hx2, hy2 = hands[1]
+        ctx.arc(hx2, hy2, 16 * s, 0, 2 * math.pi); fill_stroke(ctx, (1, 1, 1), INK, 6)
+    elif name == "impact":
+        for i in range(6):
+            a = math.radians(i * 30 + 180)
+            gx = x + 230 * d * s
+            ctx.move_to(gx + math.cos(a) * 40, GROUND - 10 + math.sin(a) * 40)
+            ctx.line_to(gx + math.cos(a) * 80, GROUND - 10 + math.sin(a) * 80)
+            stroke(ctx, INK, 6)
+    else:  # hand-held props drawn at the front hand
+        px, py = hands[1]
+        ctx.save(); ctx.translate(px, py); ctx.scale(k * s, k * s)
+        if name in ("cash_hand", "bills", "coin_hand"):
+            n = 1 if name != "bills" else 4
+            for i in range(n):
+                fly = ((t * 1.6 + i * 0.25) % 1) * 260 if name == "bills" else 0
+                ctx.save(); ctx.translate(fly * d, -fly * 0.8 + fly * fly / 500); ctx.rotate(0.3 * i + fly / 200)
+                if name == "coin_hand":
+                    ctx.arc(0, -30, 26, 0, 2 * math.pi); fill_stroke(ctx, (1, 0.82, 0.2), INK, 6)
+                else:
+                    rrect(ctx, -45, -25, 90, 50, 6); fill_stroke(ctx, GREEN, INK, 6)
+                    text(ctx, "$", 0, 0, 34, INK)
+                ctx.restore()
+        elif name == "shovel":
+            ctx.move_to(0, 0); ctx.line_to(60 * d, 140); stroke(ctx, INK, 9)
+            ctx.move_to(40 * d, 140); ctx.line_to(80 * d, 140); ctx.line_to(60 * d, 185); ctx.close_path()
+            fill_stroke(ctx, GREY, INK, 6)
+        elif name in ("box_up", "box_front"):
+            rrect(ctx, -70, -110 if name == "box_up" else -60, 140, 110, 8); fill_stroke(ctx, (0.85, 0.7, 0.5), INK, 7)
+            text(ctx, "$", 0, -55 if name == "box_up" else -5, 60, INK)
+        elif name == "laptop":
+            rrect(ctx, -10 * d - 60, -70, 120, 75, 8); fill_stroke(ctx, (0.9, 0.95, 0.92), INK, 7)
+        elif name == "phone":
+            rrect(ctx, -18, -45, 36, 70, 8); fill_stroke(ctx, INK, INK, 4)
+        elif name == "paper":
+            rrect(ctx, -10, -10, 110 * d, 80, 4); fill_stroke(ctx, (1, 1, 1), INK, 5)
+            for i in range(3):
+                ctx.move_to(10 * d, 10 + i * 20); ctx.line_to(80 * d, 10 + i * 20); stroke(ctx, GREY, 4)
+        elif name == "newspaper":
+            rrect(ctx, -80, -100, 160, 120, 4); fill_stroke(ctx, (1, 1, 1), INK, 6)
+            text(ctx, "NEWS", 0, -70, 34, INK)
+            for i in range(3):
+                ctx.move_to(-60, -40 + i * 18); ctx.line_to(60, -40 + i * 18); stroke(ctx, GREY, 4)
+        elif name == "bag_up":
+            ctx.translate(-px + (hands[0][0] + px) / 2, -40)
+            ctx.arc(0, 0, 55, 0, 2 * math.pi); fill_stroke(ctx, (0.85, 0.7, 0.4), INK, 7); text(ctx, "$", 0, 0, 56, INK)
+        elif name == "ladder":
+            for sx in (-60, 60):
+                ctx.move_to(sx, -400); ctx.line_to(sx, 600); stroke(ctx, (0.6, 0.45, 0.3), 9)
+            for i in range(-6, 10):
+                ctx.move_to(-60, i * 70); ctx.line_to(60, i * 70); stroke(ctx, (0.6, 0.45, 0.3), 7)
+        elif name == "rain_money":
+            ctx.restore(); ctx.save()
+            for i in range(9):
+                bx = x - 400 + (i * 97) % 800
+                by = ((t * 260 + i * 140) % 1300) - 100
+                ctx.save(); ctx.translate(bx, by); ctx.rotate(math.sin(t * 3 + i))
+                rrect(ctx, -40, -22, 80, 44, 6); fill_stroke(ctx, GREEN, INK, 5); ctx.restore()
+        ctx.restore()
+
+
 def figure(ctx, x, t, pose="stand", mood="neutral", label="", s=1.0, face_right=True):
-    """Draws one stick figure standing on the ground at x. Returns hand positions."""
+    """Draws one stick figure acting out `pose` on the ground at x. Returns hand positions."""
     d = 1 if face_right else -1
+    if pose in ("fall", "lie_down"):
+        s *= 0.8  # a lying body is long - keep it inside the frame
+    a = action(pose, t, d, s)
+    mood = a["mood"] or mood
     head_r = 58 * s
     leg, thigh = 150 * s, 150 * s
     body = 250 * s
     arm1, arm2 = 115 * s, 110 * s
     bob = math.sin(t * 3.2) * 4 * s
-    sway = 0.0
-    hip_y = GROUND - (leg + thigh) * 0.97 + bob
-    lean = 0.0
-    legs = [(-10, 0), (10, 0)]
-    arms = [(-25, -5), (25, 5)]
-    head_tilt = 0.0
-
-    if pose == "walk":
-        sw = math.sin(t * 7) * 28
-        legs = [(sw, sw * 0.3), (-sw, -sw * 0.3)]
-        arms = [(-sw * 0.8, -sw * 0.4 - 10), (sw * 0.8, sw * 0.4 + 10)]
-        sway = (t % 4) * 8 * d
-    elif pose == "run":
-        sw = math.sin(t * 12) * 45
-        legs = [(sw, sw * 0.9 + 20), (-sw, -sw * 0.9 + 20)]
-        arms = [(-sw - 10, -90), (sw + 10, 90)]
-        lean = 10 * d
-    elif pose == "point":
-        arms = [(-15, -5), (95 * d, (95 + math.sin(t * 4) * 6) * d)]
-    elif pose == "cheer":
-        wv = math.sin(t * 9) * 18
-        arms = [(-125 + wv, -145 + wv), (125 - wv, 145 - wv)]
-        hip_y -= abs(math.sin(t * 5)) * 18 * s
-    elif pose == "sad":
-        arms = [(-8, 0), (8, 0)]
-        head_tilt = 22 * s
-        lean = 6 * d
-    elif pose == "think":
-        arms = [(-40, 40), (35 * d, 165 * d)]
-    elif pose == "shock":
-        j = math.sin(t * 30) * 3
-        arms = [(-130 + j, -100), (130 - j, 100)]
-        legs = [(-22, 0), (22, 0)]
-    elif pose == "sit":
-        hip_y = GROUND - 30 * s
-        legs = [(80 * d, 100 * d), (95 * d, 90 * d)]
-        arms = [(-35, -20), (35 * d, 60 * d)]
-    elif pose == "hold":
-        arms = [(70 * d, 120 * d), (85 * d, 125 * d)]
-    elif pose == "present":
-        arms = [(-15, -5), (115 * d, (128 + math.sin(t * 4) * 8) * d)]
-    elif pose == "angry":
-        arms = [(-60, 60), (60, -60)]
-        legs = [(-18, 0), (18, 0)]
-
-    x = x + sway
+    x = x + a["dx"]
+    hip_y = GROUND - (leg + thigh) * 0.97 + bob + a["dy"]
+    lean, head_tilt = a["lean"], a["tilt"]
+    # soft shadow keeps the figure grounded
+    ctx.save(); ctx.translate(x, GROUND + 4); ctx.scale(1, 0.18)
+    ctx.arc(0, 0, 85 * s, 0, 2 * math.pi); ctx.restore()
+    ctx.set_source_rgba(0, 0, 0, 0.08); ctx.fill()
+    ctx.save()
+    if a["rot"]:
+        k = abs(a["rot"]) / 90
+        piv = GROUND - 330 * s  # rotate around the middle of the body, then drop it onto the ground
+        ctx.translate(x, piv + k * 255 * s); ctx.rotate(math.radians(a["rot"])); ctx.translate(-x, -piv)
     neck_x = x + math.sin(math.radians(lean)) * body
-    neck_y = hip_y - body
-    # legs
-    for a1, a2 in legs:
+    neck_y = hip_y - math.cos(math.radians(lean)) * body
+    for a1, a2 in a["legs"]:
         _limb(ctx, x, hip_y, a1, thigh, a2, leg)
-    # body
-    ctx.move_to(x, hip_y)
-    ctx.line_to(neck_x, neck_y)
-    stroke(ctx)
-    # arms
+    ctx.move_to(x, hip_y); ctx.line_to(neck_x, neck_y); stroke(ctx)
     sh_x, sh_y = neck_x + (x - neck_x) * 0.15, neck_y + (hip_y - neck_y) * 0.12
-    hands = [_limb(ctx, sh_x, sh_y, -a1 if False else a1, arm1, a2, arm2) for a1, a2 in arms]
-    # head
-    hx = neck_x + head_tilt * 0.4 * d
-    hy = neck_y - head_r + head_tilt * 0.6
+    hands = [_limb(ctx, sh_x, sh_y, a1, arm1, a2, arm2) for a1, a2 in a["arms"]]
+    hx = neck_x + math.sin(math.radians(lean)) * head_r + head_tilt * 0.4 * d
+    hy = neck_y - math.cos(math.radians(lean)) * head_r + head_tilt * 0.6
     ctx.arc(hx, hy, head_r, 0, 2 * math.pi)
-    ctx.set_source_rgb(1, 1, 1)
-    ctx.fill_preserve()
-    stroke(ctx)
+    ctx.set_source_rgb(1, 1, 1); ctx.fill_preserve(); stroke(ctx)
     _face(ctx, hx, hy, head_r, mood, d, t)
-    if pose == "think":
-        k = pop(t, 0.3)
-        if k > 0:
-            ctx.save()
-            ctx.translate(hx + 95 * d * s, hy - 110 * s)
-            ctx.scale(k, k)
-            for i, rr in enumerate((10, 16)):
-                ctx.arc(-50 * d * s + i * 25 * d * s, 70 * s - i * 28 * s, rr * s, 0, 2 * math.pi)
-                stroke(ctx, INK, 6)
-            text(ctx, "?", 0, 0, 110 * s, DARK_GREEN)
-            ctx.restore()
-    if pose == "shock":
-        for k in range(3):
-            ang = math.radians(-60 + k * 60)
-            ctx.move_to(hx + math.sin(ang) * (head_r + 18), hy - math.cos(ang) * (head_r + 18))
-            ctx.line_to(hx + math.sin(ang) * (head_r + 48), hy - math.cos(ang) * (head_r + 48))
-            stroke(ctx, INK, 7)
-    if pose == "sad":
-        ctx.arc(hx + 30 * d * s, hy + 20 * s + (t * 60 % 50), 7 * s, 0, 2 * math.pi)
-        ctx.set_source_rgb(0.35, 0.6, 0.95)
-        ctx.fill()
+    for f in a["fx"]:
+        _fx(ctx, f, hx, hy, hands, t, d, s, x)
+    ctx.restore()
     if label:
         text(ctx, label.upper(), hx, hy - head_r - 55 * s, 54 * s, INK, outline=(1, 1, 1))
         lw = min(len(label), 14) * 15 * s
-        ctx.move_to(hx - lw, hy - head_r - 22 * s)
-        ctx.line_to(hx + lw, hy - head_r - 22 * s)
+        ctx.move_to(hx - lw, hy - head_r - 22 * s); ctx.line_to(hx + lw, hy - head_r - 22 * s)
         stroke(ctx, GREEN, 8)
     return hands
 
@@ -795,12 +1008,8 @@ def _brand(ctx):
 def draw_scene(ctx, scene: dict, t: float, idx: int):
     ctx.set_source_rgb(1, 1, 1)
     ctx.paint()
-    # gentle camera push-in
-    z = 1 + min(t, 6) * 0.006
     ctx.save()
-    ctx.translate(W / 2, GROUND - 300)
-    ctx.scale(z, z)
-    ctx.translate(-W / 2, -(GROUND - 300))
+    _camera(ctx, scene.get("_cam", "push"), t, scene.get("_seed", 0))
     _ground(ctx)
     chars = [c for c in scene.get("characters", []) if c.get("pose")][:3]
     p = scene.get("prop", "none") or "none"
@@ -810,9 +1019,12 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
         if has_prop:
             prop(ctx, p, W / 2, GROUND - 330, t, 1.25)
     elif n == 1:
-        cx = 320 if has_prop else W / 2
+        jx = (scene.get("_seed", 0) % 101 - 50)
+        cx = (320 if has_prop else W / 2) + jx
+        sc1 = 1.08 + (scene.get("_seed", 0) % 7) * 0.012
+        fr = True if has_prop else bool(scene.get("_seed", 0) % 2)
         _enter(ctx, t, lambda: figure(ctx, cx, t, chars[0]["pose"], chars[0].get("mood", "neutral"),
-                                      chars[0].get("label", ""), 1.12, True))
+                                      chars[0].get("label", ""), sc1, fr))
         if has_prop:
             prop(ctx, p, 785, GROUND - 300, t, 1.0)
     else:
@@ -835,6 +1047,66 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
     _brand(ctx)
 
 
+CAMS = ["push", "pull", "pan_l", "pan_r", "face", "tilt", "low", "drift"]
+_SHAKY = {"shock", "fall", "panic", "angry", "shake_fist", "jump"}
+
+
+def _camera(ctx, cam, t, seed):
+    """Camera move for a scene. Anchored near the figures' chests."""
+    e = ease_out(min(t / 3.5, 1.0))
+    ax, ay = W / 2, GROUND - 330
+    z, dx, dy, rot = 1.0, 0.0, 0.0, 0.0
+    if cam == "push":
+        z = 1.0 + 0.10 * e
+    elif cam == "pull":
+        z = 1.14 - 0.12 * e
+    elif cam in ("pan_l", "pan_r"):
+        z, dx = 1.08, (e - 0.5) * 90 * (1 if cam == "pan_l" else -1)
+    elif cam == "face":
+        z, ay = 1.0 + 0.32 * e, GROUND - 560
+    elif cam == "tilt":
+        z, rot = 1.06, (0.025 if seed % 2 else -0.025) * e
+    elif cam == "low":
+        z, ay, dy = 1.1, GROUND - 120, -40 * e
+    elif cam == "drift":
+        z, dx, dy = 1.05, math.sin(t * 0.8) * 25, math.cos(t * 0.6) * 15
+    elif cam == "shake":
+        k = max(0.0, 1 - t / 0.8)
+        z, dx, dy = 1.06, math.sin(t * 60) * 14 * k, math.cos(t * 53) * 10 * k
+    ctx.translate(ax + dx, ay + dy)
+    ctx.rotate(rot)
+    ctx.scale(z, z)
+    ctx.translate(-ax, -ay)
+
+
+_ALT = {"stand": ["explain", "point"], "present": ["explain", "point"], "point": ["present", "explain"],
+        "cheer": ["jump", "clap", "fly_money"], "sad": ["cry", "kneel", "facepalm"], "think": ["shrug", "read"],
+        "shock": ["panic", "facepalm"], "hold": ["count_money", "give"], "walk": ["sneak", "run"],
+        "run": ["walk", "panic"], "angry": ["shake_fist", "push"], "sit": ["type", "tired"]}
+
+
+def _prepare(scenes: list[dict]) -> list[dict]:
+    """No two scenes in a row share the same action or camera; shaky camera on dramatic actions."""
+    import zlib
+    prev_pose, prev_cam = None, None
+    for i, sc in enumerate(scenes):
+        seed = zlib.crc32((sc.get("text", "") + str(i)).encode())
+        sc["_seed"] = seed
+        chars = [c for c in sc.get("characters", []) if c.get("pose")]
+        if chars and chars[0]["pose"] == prev_pose:
+            alts = _ALT.get(prev_pose, ["explain", "point", "present"])
+            chars[0]["pose"] = alts[seed % len(alts)]
+        pose = chars[0]["pose"] if chars else None
+        if pose in _SHAKY:
+            cam = "shake"
+        else:
+            opts = [c for c in CAMS if c != prev_cam]
+            cam = opts[seed % len(opts)]
+        sc["_cam"] = cam
+        prev_pose, prev_cam = pose, cam
+    return scenes
+
+
 def _enter(ctx, t, draw):
     k = pop(t, 0.0, 0.3)
     ctx.save()
@@ -848,7 +1120,7 @@ def _enter(ctx, t, draw):
 def draw_end_card(ctx, t: float, handle: str):
     ctx.set_source_rgb(1, 1, 1)
     ctx.paint()
-    k = pop(t, 0.0, 0.4)
+    k = max(pop(t, 0.0, 0.4), 0.01)
     ctx.save()
     ctx.translate(W / 2, 640)
     ctx.scale(k, k)
@@ -903,6 +1175,7 @@ def draw_end_card(ctx, t: float, handle: str):
 def render(scenes: list[dict], times: list[tuple[float, float]], end_card: float, out: Path,
            fps: int = 30, handle: str = "@monezic") -> Path:
     """scenes[i] is shown from times[i][0] to times[i][1]; then an end card for end_card seconds."""
+    scenes = _prepare([dict(sc) for sc in scenes])
     total = times[-1][1] + end_card
     frames = int(total * fps)
     proc = subprocess.Popen(
