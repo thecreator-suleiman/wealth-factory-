@@ -6,6 +6,7 @@ import html
 import os
 import shutil
 import sys
+import time
 import traceback
 from datetime import datetime, timezone
 
@@ -107,7 +108,16 @@ def run() -> int:
         log(f"Format: {fmt['name']} ({kind})")
 
         step = "writing the story"
-        story = write_story(cfg, fmt, style, [h["topic"] for h in history])
+        for attempt in range(5):  # Google "high demand" spikes pass in minutes - be patient
+            try:
+                story = write_story(cfg, fmt, style, [h["topic"] for h in history])
+                break
+            except RuntimeError as e:
+                busy = any(k in str(e) for k in ("503", "429", "UNAVAILABLE", "high demand", "quota"))
+                if not busy or attempt == 4:
+                    raise
+                log(f"Gemini busy - waiting {3 + attempt * 2} min, then trying again")
+                time.sleep((3 + attempt * 2) * 60)
         write_json(folder / "story.json", story)
 
         step = "recording the voice"

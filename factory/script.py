@@ -9,6 +9,7 @@ from .common import env, log
 # Tried in order. If one is busy, retired or out of free quota, the next is used.
 MODELS = [
     "gemini-flash-latest",
+    "gemini-3.8-flash",
     "gemini-2.5-flash-lite",
     "gemini-flash-lite-latest",
     "gemini-2.5-flash",
@@ -38,6 +39,7 @@ def _models() -> list[str]:
             return float(nums[0]) if nums else 0.0
         extra = sorted(set(extra) - set(MODELS), key=ver, reverse=True)
         _FOUND.extend(MODELS + extra[:6])
+        log(f"Gemini models to try: {', '.join(_FOUND)}")
     return _FOUND
 
 from .stickman import MOODS, PLACES, POSES, PROPS
@@ -213,6 +215,11 @@ def _call(model: str, key: str, prompt: str) -> dict:
         timeout=240,
     )
     if r.status_code != 200:
+        if r.status_code == 404:  # Google says which model replaces a retired one - start using it
+            for new in re.findall(r"models/(gemini-[\w.\-]+)", r.text):
+                if new != model and new not in _FOUND:
+                    _FOUND.insert(0, new)
+                    log(f"Gemini model {model} retired - switching to {new}")
         raise RuntimeError(f"Gemini {model} HTTP {r.status_code}: {r.text[:300]}")
     data = r.json()
     parts = data["candidates"][0]["content"]["parts"]
