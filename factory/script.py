@@ -202,7 +202,7 @@ Reply with ONLY a JSON object:
 _GROQ: list[str] = []
 
 
-def _groq(prompt: str, as_json: bool, max_tokens: int = 4096) -> str:
+def _groq(prompt: str, as_json: bool, max_tokens: int = 3000) -> str:
     """Backup writer on Groq (free) - used only when every Gemini model fails."""
     import os
     gk = os.environ.get("GROQ_API_KEY", "")
@@ -214,10 +214,14 @@ def _groq(prompt: str, as_json: bool, max_tokens: int = 4096) -> str:
             ids = [m["id"] for m in requests.get("https://api.groq.com/openai/v1/models", headers=h, timeout=30).json()["data"]]
         except Exception:  # noqa: BLE001
             ids = []
-        pref = ["gpt-oss-120b", "llama-4-maverick", "llama-3.3-70b", "kimi", "qwen", "llama"]
-        ids = [i for i in ids if not any(b in i for b in ("whisper", "tts", "guard", "embed", "vision"))]
-        ids.sort(key=lambda i: next((n for n, k in enumerate(pref) if k in i), 99))
-        _GROQ.extend(ids[:3] or ["llama-3.3-70b-versatile"])
+        pref = ["gpt-oss-120b", "llama-4-maverick", "llama-3.3-70b", "kimi-k2", "qwen3", "gpt-oss-20b",
+                "llama-4-scout", "llama"]
+        # Only text-writing models (skip voice, speech, safety and vision models)
+        ids = [i for i in ids if any(k in i for k in pref)
+               and not any(b in i for b in ("whisper", "tts", "orpheus", "playai", "guard", "embed", "vision"))]
+        ids.sort(key=lambda i: next(n for n, k in enumerate(pref) if k in i))
+        _GROQ.extend(ids[:4] or ["llama-3.3-70b-versatile", "openai/gpt-oss-120b"])
+        log(f"Groq backup models: {', '.join(_GROQ)}")
     last = ""
     for model in _GROQ:
         body = {"model": model, "temperature": 0.9, "max_tokens": max_tokens,
@@ -229,6 +233,7 @@ def _groq(prompt: str, as_json: bool, max_tokens: int = 4096) -> str:
             log(f"Backup writer used: Groq {model}")
             return r.json()["choices"][0]["message"]["content"]
         last = f"Groq {model} HTTP {r.status_code}: {r.text[:200]}"
+        log(last)
     raise RuntimeError(last or "Groq failed")
 
 
