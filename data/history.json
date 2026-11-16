@@ -104,5 +104,33 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-16T10:46+00:00",
+    "topic": "SEC EDGAR free investing research tool",
+    "title": "Wall Street Hates This FREE Government Tool",
+    "format": "Free money tool",
+    "kind": "tool",
+    "plan": "https://thecreator-suleiman.github.io/wealth-factory-/plans/20261116-1046.html",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "seconds": 93.3,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261116-1046.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=A-dTCM21xiE",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7708725032343604501",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DfzN9h8mRrT/",
+        "error": ""
+      }
+    }
   }
 ]
