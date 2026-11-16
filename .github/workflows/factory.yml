@@ -35,6 +35,8 @@ jobs:
     timeout-minutes: 85
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # always the latest history, so a late or backup run never double-posts
 
       - uses: actions/setup-python@v5
         with:
