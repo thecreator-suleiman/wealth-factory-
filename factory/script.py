@@ -22,6 +22,8 @@ _FOUND: list[str] = []
 def _models() -> list[str]:
     """MODELS first, then any newer free Flash models Google lists today - so a retired model never stops us."""
     import os
+    if os.environ.get("FORCE_BACKUP") == "true":
+        return []  # test switch: pretend Gemini is down
     if not _FOUND:
         extra = []
         try:
@@ -197,7 +199,44 @@ Reply with ONLY a JSON object:
             "that fits the format. Only use facts you are certain about.")
 
 
+_GROQ: list[str] = []
+
+
+def _groq(prompt: str, as_json: bool, max_tokens: int = 4096) -> str:
+    """Backup writer on Groq (free) - used only when every Gemini model fails."""
+    import os
+    gk = os.environ.get("GROQ_API_KEY", "")
+    if not gk:
+        raise RuntimeError("Groq backup not set up")
+    h = {"Authorization": f"Bearer {gk}"}
+    if not _GROQ:
+        try:
+            ids = [m["id"] for m in requests.get("https://api.groq.com/openai/v1/models", headers=h, timeout=30).json()["data"]]
+        except Exception:  # noqa: BLE001
+            ids = []
+        pref = ["gpt-oss-120b", "llama-4-maverick", "llama-3.3-70b", "kimi", "qwen", "llama"]
+        ids = [i for i in ids if not any(b in i for b in ("whisper", "tts", "guard", "embed", "vision"))]
+        ids.sort(key=lambda i: next((n for n, k in enumerate(pref) if k in i), 99))
+        _GROQ.extend(ids[:3] or ["llama-3.3-70b-versatile"])
+    last = ""
+    for model in _GROQ:
+        body = {"model": model, "temperature": 0.9, "max_tokens": max_tokens,
+                "messages": [{"role": "user", "content": prompt}]}
+        if as_json:
+            body["response_format"] = {"type": "json_object"}
+        r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=h, json=body, timeout=180)
+        if r.status_code == 200:
+            log(f"Backup writer used: Groq {model}")
+            return r.json()["choices"][0]["message"]["content"]
+        last = f"Groq {model} HTTP {r.status_code}: {r.text[:200]}"
+    raise RuntimeError(last or "Groq failed")
+
+
 def _call(model: str, key: str, prompt: str) -> dict:
+    if model == "groq":
+        txt = _groq(prompt + "\n\nReply with ONLY one JSON object that follows this schema exactly "
+                    "(same field names and allowed values):\n" + json.dumps(SCHEMA), True)
+        return json.loads(re.sub(r"^\s*```(?:json)?\s*|\s*```\s*$", "", txt.strip()))
     body = {
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
@@ -361,7 +400,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     best = None
     for attempt in range(1, 7):
         story = None
-        for model in _models():
+        for model in _models() + ["groq"]:
             try:
                 story = _clean(_call(model, key, _prompt(cfg, fmt, research, used_topics, feedback)))
                 story["model"] = model
@@ -425,4 +464,10 @@ def write_freebie(story: dict, kind: str) -> str:
                 return txt
         except Exception as e:  # noqa: BLE001
             log(f"Guide writer {model} unavailable: {e}")
+    try:
+        txt = _groq(prompt, False, 3000).strip()
+        if len(txt) > 400:
+            return txt
+    except Exception as e:  # noqa: BLE001
+        log(f"Guide backup unavailable: {e}")
     return ""
