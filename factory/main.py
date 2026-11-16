@@ -80,6 +80,11 @@ def run() -> int:
     cfg = load_config()
     history = read_json(HISTORY, [])
     now = datetime.now(timezone.utc)
+    if os.environ.get("GITHUB_EVENT_NAME") == "schedule" and history:
+        last = datetime.fromisoformat(history[-1]["date"])
+        if (now - last).total_seconds() < 5 * 3600:
+            log("This slot was already posted - backup run skipping.")
+            return 0
     run_id = now.strftime("%Y%m%d-%H%M")
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID"):
