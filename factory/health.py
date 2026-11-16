@@ -21,7 +21,8 @@ def main() -> None:
         for p, r in (h.get("results") or {}).items():
             if r.get("ok") and p in ok:
                 ok[p] += 1
-    expected = 14
+    first = dt.datetime.fromisoformat(hist[0]["date"]) if hist else now
+    expected = max(1, min(14, round((now - first).total_seconds() / 43200)))  # 2 a day since the first post
     lines = ["🩺 <b>Monezic weekly check</b>", f"Videos made: {len(week)} / {expected}"]
     lines += [f"{'✅' if n >= len(week) and n else '⚠️'} {p.title()}: {n} posted" for p, n in ok.items()]
     if len(week) < expected - 2:
