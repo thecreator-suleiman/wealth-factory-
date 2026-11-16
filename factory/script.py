@@ -423,6 +423,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     feedback = ""
     errors = []
     best = None
+    backup_best = None
     for attempt in range(1, 7):
         story = None
         for model in _models() + ["groq"]:
@@ -442,6 +443,8 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
             words = len(story["script"].split())
             if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.0:
                 best = story
+            if story.get("model") == "groq" and len(story["beats"]) >= 7 and words >= 140:
+                backup_best = story  # backup writer: slightly short is better than no video
             feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(issues)
             continue
         ok, probs = _fact_check(key, story)
@@ -454,6 +457,9 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     if best:
         log("Using the closest story (length slightly off target).")
         return _guarantee_shape(best, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
+    if backup_best:
+        log("Gemini unavailable - using the backup writer's story.")
+        return _guarantee_shape(backup_best, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
 
 
