@@ -11,7 +11,7 @@ import traceback
 from datetime import datetime, timezone
 
 from .common import DATA, WORK, load_config, log, read_json, write_json
-from .notify import advice, report, send_text, send_video, send_whatsapp, whatsapp_report
+from .notify import advice, report, send_text, send_video, send_whatsapp, share_messages, whatsapp_report
 from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_freebie, write_story
 from . import stickman
@@ -168,6 +168,8 @@ def run() -> int:
         send_video(cfg, video, f"<b>{html.escape(story['title'])}</b>")
         delivered = send_text(cfg, report(cfg, story, results, run_url))
         send_whatsapp(whatsapp_report(story, results))
+        for msg in share_messages(story, results):  # forward-ready: one link each
+            send_whatsapp(msg)
 
         if results is not None:
             history.append({

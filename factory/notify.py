@@ -118,6 +118,20 @@ def send_whatsapp(text: str) -> None:
                 log(f"WhatsApp via {name} failed: {e}")
 
 
+def share_messages(story: dict, results: dict | None) -> list[str]:
+    """One ready-to-forward message per platform: a hook line + ONE link, so WhatsApp shows a big preview."""
+    if not results:
+        return []
+    hook = story["title"]
+    out = []
+    for platform, cta in (("youtube", "Watch on YouTube 👇"), ("tiktok", "Watch on TikTok 👇"),
+                          ("instagram", "Watch on Instagram 👇")):
+        r = results.get(platform) or {}
+        if r.get("ok") and r.get("link"):
+            out.append(f"🔥 {hook}\n\n{cta}\n{r['link']}")
+    return out
+
+
 def whatsapp_report(story: dict, results: dict | None) -> str:
     icons = {"youtube": "▶️ YouTube", "tiktok": "🎵 TikTok", "instagram": "📸 Instagram"}
     lines = ["*Monezic* - new video", f"_{story['title']}_", ""]
