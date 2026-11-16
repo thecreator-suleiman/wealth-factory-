@@ -222,18 +222,32 @@ def _groq(prompt: str, as_json: bool, max_tokens: int = 3000) -> str:
         ids.sort(key=lambda i: next(n for n, k in enumerate(pref) if k in i))
         _GROQ.extend(ids[:4] or ["llama-3.3-70b-versatile", "openai/gpt-oss-120b"])
         log(f"Groq backup models: {', '.join(_GROQ)}")
+    import time as _t
     last = ""
-    for model in _GROQ:
-        body = {"model": model, "temperature": 0.9, "max_tokens": max_tokens,
-                "messages": [{"role": "user", "content": prompt}]}
-        if as_json:
-            body["response_format"] = {"type": "json_object"}
-        r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=h, json=body, timeout=180)
-        if r.status_code == 200:
-            log(f"Backup writer used: Groq {model}")
-            return r.json()["choices"][0]["message"]["content"]
-        last = f"Groq {model} HTTP {r.status_code}: {r.text[:200]}"
-        log(last)
+    for rnd in range(2):
+        for model in _GROQ:
+            body = {"model": model, "temperature": 0.9, "max_tokens": max_tokens,
+                    "messages": [{"role": "user", "content": prompt}]}
+            r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=h, json=body, timeout=180)
+            if r.status_code == 200:
+                txt = r.json()["choices"][0]["message"]["content"] or ""
+                txt = re.sub(r"<think>.*?</think>", "", txt, flags=re.S).strip()
+                if as_json:
+                    m = re.search(r"\{.*\}", txt, re.S)
+                    if not m:
+                        last = f"Groq {model}: no JSON in reply"
+                        log(last)
+                        continue
+                    txt = m.group(0)
+                log(f"Backup writer used: Groq {model}")
+                return txt
+            last = f"Groq {model} HTTP {r.status_code}: {r.text[:200]}"
+            log(last)
+        if "429" in last and rnd == 0:
+            log("Groq per-minute limit - waiting 65 s")
+            _t.sleep(65)
+        else:
+            break
     raise RuntimeError(last or "Groq failed")
 
 
