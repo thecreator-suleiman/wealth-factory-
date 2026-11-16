@@ -132,5 +132,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-16T21:59+00:00",
+    "topic": "Nokia refusing Android in 2011",
+    "title": "Nokia Had Android. Then They Said No.",
+    "format": "The biggest mistake",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "fact/long",
+    "seconds": 88.3,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261116-2159.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=Qo_x3S9FFFM",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7708895349812890898",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df0ZhM7CkXa/",
+        "error": ""
+      }
+    }
   }
 ]
