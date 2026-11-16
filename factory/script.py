@@ -368,7 +368,7 @@ OFFER = {
 }
 
 
-def _guarantee_shape(story: dict, kind: str = "story") -> dict:
+def _guarantee_shape(story: dict, kind: str = "story", opening: str = "stop") -> dict:
     """Every video opens with 'stop scrolling' and ends with a comment question - no exceptions."""
     import random
     rnd = random.Random(story.get("topic", ""))
@@ -376,7 +376,13 @@ def _guarantee_shape(story: dict, kind: str = "story") -> dict:
               "characters": [{"pose": "present", "mood": "happy", "label": ""}],
               "prop": "clock", "big_text": "", "headline": ""}
     beats = story["beats"]
-    if not re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I):
+    if opening == "fact":
+        # Shocking fact first (the hook), then "give me one minute".
+        if re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I) and len(beats) > 1:
+            beats.pop(0)
+        beats.insert(1, dict(opener, text=rnd.choice(["Give me one minute.", "Give me sixty seconds.",
+                                                       "Stay with me for one minute."])))
+    elif not re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I):
         beats.insert(0, opener)
     if "?" not in beats[-1]["text"]:
         beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
@@ -423,12 +429,12 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
         if not ok and attempt < 6:
             feedback = ("\nYOUR LAST SCRIPT HAD FACTUAL ERRORS - FIX THEM (or drop those claims):\n- " + "\n- ".join(probs))
             continue
-        story = _guarantee_shape(story, fmt.get("kind", "story"))
+        story = _guarantee_shape(story, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
         log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats)")
         return story
     if best:
         log("Using the closest story (length slightly off target).")
-        return _guarantee_shape(best, fmt.get("kind", "story"))
+        return _guarantee_shape(best, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
 
 

@@ -108,6 +108,15 @@ def run() -> int:
         log(f"Format: {fmt['name']} ({kind})")
 
         step = "writing the story"
+        # 1-week growth test: alternate the opening (A = "stop scrolling" first, B = shocking fact first)
+        # and the length (long ~1:35 / short ~1:10). Results are compared in YouTube Studio.
+        n = len(history)
+        opening = "stop" if n % 2 == 0 else "fact"
+        length = "long" if (n // 2) % 2 == 0 else "short"
+        if length == "short":
+            cfg["video"]["target_seconds"] = 70
+        cfg["_opening"] = opening
+        log(f"Test variant: opening={opening}, length={length}")
         for attempt in range(5):  # Google "high demand" spikes pass in minutes - be patient
             try:
                 story = write_story(cfg, fmt, style, [h["topic"] for h in history])
@@ -122,7 +131,8 @@ def run() -> int:
 
         step = "recording the voice"
         voice, words, voice_name = make_voice(cfg, story["script"], folder)
-        voice, words, total = fit_length(voice, words)
+        voice, words, total = (fit_length(voice, words, 62.0, 80.0) if length == "short"
+                               else fit_length(voice, words))
 
         step = "drawing the stickman scenes"
         stickman.set_font("Anton" if (FONT_DIR / "Anton-Regular.ttf").exists() else "DejaVu Sans")
@@ -168,6 +178,7 @@ def run() -> int:
                 "kind": kind,
                 "plan": plan_url,
                 "voice": voice_name,
+                "variant": f"{opening}/{length}",
                 "seconds": round(total, 1),
                 "video": video_url,
                 "results": results,
