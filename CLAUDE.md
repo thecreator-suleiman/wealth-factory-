@@ -26,6 +26,9 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 ## Pending (do in order)
 1. Sat 21 Nov: restyle stickmen like owner's "image 3" (hand-drawn marker look: curved limbs, mitten hands,
    shoe feet, oval head, soft green/red mood glow behind figure). Keep all actions/places/cameras.
+1b. Borrow from github.com/Jakeschincariol/youtube-agent-skill (MIT, offline Python): 21 hook formulas
+   (skills/yt-script/hooks.json) into the Gemini prompt, hookscore.py to reject weak hooks automatically,
+   title.py linter for titles. Credit MIT license. Do NOT install as Claude skills (costs tokens, manual).
 2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
    Send for approval before publishing.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
