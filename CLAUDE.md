@@ -31,6 +31,10 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    title.py linter for titles. Credit MIT license. Do NOT install as Claude skills (costs tokens, manual).
 1c. Also Saturday: loop endings (last line flows into first), Part 1/Part 2 cliffhanger stories
    (some videos), trending names this week (Gemini search). Owner approved all three.
+1d. Also Saturday: SOUND EFFECTS + 2D VFX. Generate own SFX with numpy (no licence issues, like
+   tools/make_music.py): whoosh on scene change, pop on big text, cash register on money, impact on fall/shock,
+   riser into hook, ding on lesson. Mix in finish_video under voice. VFX in Cairo: zoom punch on key words,
+   particles/confetti, glow, light flash on reveals. No Blender (too slow/fragile on free GitHub runners).
 2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
    Send for approval before publishing.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
