@@ -161,5 +161,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-17T14:28+00:00",
+    "topic": "Dangote Cement vs BUA Cement price war in Nigeria",
+    "title": "The Billionaire Cement War Is Changing Africa",
+    "format": "African empire",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "stop/short",
+    "seconds": 64.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261117-1428.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=NRz-FXp9NEU",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df2Mclnkh3X/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7709153440282184961",
+        "error": ""
+      }
+    }
   }
 ]
