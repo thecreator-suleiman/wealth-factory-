@@ -1,0 +1,41 @@
+# Monezic pipeline - context for Claude
+
+Owner: Suleiman (Kigali, UTC+2). Wants SHORT answers, honesty, minimal token use, only Monezic topics.
+Never ask for or accept secret keys in chat (they live in GitHub Secrets).
+
+## What it is
+Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (00:00 + 12:00 Kigali) to YouTube, TikTok,
+Instagram (via Buffer API), report to Telegram + WhatsApp (Whatabot), IG reels auto-shared to FB Page "Monezic".
+Repo: thecreator-suleiman/wealth-factory- (public). Free plans site: GitHub Pages /docs (branded).
+Claude is NOT used by the pipeline - only for fixes/upgrades.
+
+## Key files
+- config.yaml - channel, rules, mix [story x7, business, tool, news], formats, posting times.
+- factory/main.py - run(): growth test (opening stop/fact by n%2, length long 97s/short 70s by (n//2)%2),
+  5 rotating STRUCTURES, Gemini-busy waits, sources in caption, backup-run guard (skip if posted <5h ago).
+- factory/script.py - Gemini writer (auto model discovery + 404 replacement learning), Groq backup writer
+  (GROQ_API_KEY), _guarantee_shape (opener, closing question + "Comment below, and follow Monezic so you can
+  find us again.", "The lesson:" beat), place + pose schema.
+- factory/stickman.py - Cairo renderer: 47 actions (action()), fx, 10 places (draw_place), chairs/desks,
+  9 camera moves, _prepare() no-repeat. Style = "clean round" (style 6).
+- factory/voice.py - edge-tts Andrew Multilingual (main), Andrew Neural, then Kokoro am_michael backup. Never female.
+- factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
+- factory/health.py + .github/workflows/health.yml - Sunday weekly report.
+- .github/workflows/factory.yml - crons 09:20/21:20 UTC + backups 10:05/22:05; inputs post, test_backup.
+
+## Pending (do in order)
+1. Sat 21 Nov: restyle stickmen like owner's "image 3" (hand-drawn marker look: curved limbs, mitten hands,
+   shoe feet, oval head, soft green/red mood glow behind figure). Keep all actions/places/cameras.
+2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
+   Send for approval before publishing.
+3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
+   (Viewed vs swiped away; start: 39% stayed). Keep the winner.
+4. Next week: weekly long YouTube video (6-10 min, hand-drawn whiteboard style, ideally owner's voice).
+   Check if Buffer can post long videos; else YouTube API (owner does one-time OAuth).
+5. ~29 Nov: TikTok review (stuck ~115 views) - if <200 avg, new TikTok account in Buffer.
+6. Buffer API key expires 14 Nov 2027.
+
+## Notes
+- YouTube "inauthentic content" policy: keep originality (lesson line, varied structures, sources, research).
+- Instagram DM bot: Zorcha free, keywords PLAN/GUIDE, link to Pages site. IG handle @monezic_, YT @monezic.
+- Owner's weekly Claude limit resets Fri 23:00 Kigali; office computer use Tue-Fri - keep work light then.
