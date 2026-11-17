@@ -69,7 +69,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if hook:
         lines.append(
             f"Dialogue: 1,{_ts(0)},{_ts(2.6)},Hook,,0,0,0,,"
-            f"{{\\pos({w // 2},{int(h * 0.19)})\\fad(60,200)\\fscx60\\fscy60\\t(0,140,\\fscx105\\fscy105)\\t(140,260,\\fscx100\\fscy100)}}"
+            f"{{\\pos({w // 2},{int(h * 0.19)})\\fad(0,200)\\fscx112\\fscy112\\t(0,180,\\fscx100\\fscy100)}}"
             f"{_esc(hook.upper())}"
         )
     chunks = _chunks(words)

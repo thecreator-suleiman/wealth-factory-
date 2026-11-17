@@ -1122,6 +1122,8 @@ def _brand(ctx):
 
 
 def draw_scene(ctx, scene: dict, t: float, idx: int):
+    if idx == 0:
+        t += 0.6  # first frame already full and moving - no empty pop-in (the swipe decision happens here)
     ctx.set_source_rgb(1, 1, 1)
     ctx.paint()
     ctx.save()

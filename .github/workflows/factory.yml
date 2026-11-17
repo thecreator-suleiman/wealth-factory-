@@ -6,10 +6,10 @@ on:
     # takes ~10 min, so they are set 40 min early:
     # 09:50 UTC -> posted about 12:00 Kigali (11:00 Europe, 06:00 New York)
     # 21:50 UTC -> posted about 00:00 Kigali (23:00 Europe, 17:00 New York)
-    - cron: "20 9 * * *"
+    - cron: "20 13 * * *"
     - cron: "20 21 * * *"
     # Backups: GitHub sometimes skips a scheduled run. These run only if the slot wasn't posted.
-    - cron: "5 10 * * *"
+    - cron: "5 14 * * *"
     - cron: "5 22 * * *"
   workflow_dispatch:
     inputs:

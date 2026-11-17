@@ -4,7 +4,7 @@ Owner: Suleiman (Kigali, UTC+2). Wants SHORT answers, honesty, minimal token use
 Never ask for or accept secret keys in chat (they live in GitHub Secrets).
 
 ## What it is
-Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (00:00 + 12:00 Kigali) to YouTube, TikTok,
+Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (00:00 + 16:00 Kigali) to YouTube, TikTok,
 Instagram (via Buffer API), report to Telegram + WhatsApp (Whatabot), IG reels auto-shared to FB Page "Monezic".
 Repo: thecreator-suleiman/wealth-factory- (public). Free plans site: GitHub Pages /docs (branded).
 Claude is NOT used by the pipeline - only for fixes/upgrades.
@@ -21,7 +21,7 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 - factory/voice.py - edge-tts Andrew Multilingual (main), Andrew Neural, then Kokoro am_michael backup. Never female.
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
-- .github/workflows/factory.yml - crons 09:20/21:20 UTC + backups 10:05/22:05; inputs post, test_backup.
+- .github/workflows/factory.yml - crons 13:20/21:20 UTC + backups 14:05/22:05; inputs post, test_backup.
 
 ## Pending (do in order)
 1. Sat 21 Nov: restyle stickmen like owner's "image 3" (hand-drawn marker look: curved limbs, mitten hands,
@@ -29,6 +29,8 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 1b. Borrow from github.com/Jakeschincariol/youtube-agent-skill (MIT, offline Python): 21 hook formulas
    (skills/yt-script/hooks.json) into the Gemini prompt, hookscore.py to reject weak hooks automatically,
    title.py linter for titles. Credit MIT license. Do NOT install as Claude skills (costs tokens, manual).
+1c. Also Saturday: loop endings (last line flows into first), Part 1/Part 2 cliffhanger stories
+   (some videos), trending names this week (Gemini search). Owner approved all three.
 2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
    Send for approval before publishing.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
