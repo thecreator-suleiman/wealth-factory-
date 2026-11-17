@@ -116,6 +116,8 @@ def run() -> int:
         if length == "short":
             cfg["video"]["target_seconds"] = 70
         cfg["_opening"] = opening
+        from .script import STRUCTURES
+        cfg["_structure"] = STRUCTURES[(n // 4 + n) % len(STRUCTURES)]
         log(f"Test variant: opening={opening}, length={length}")
         for attempt in range(5):  # Google "high demand" spikes pass in minutes - be patient
             try:
@@ -151,6 +153,9 @@ def run() -> int:
             story["plan_url"] = plan_url
             if plan_url:
                 story["caption"] += f"\n\nFree {'business plan' if kind == 'business' else 'guide'}: {plan_url}"
+        src = [x.strip() for x in story.get("sources", []) if x and x.strip() and "http" not in x][:4]
+        if src:
+            story["caption"] += "\n\nSources: " + ", ".join(src)
 
         results = None
         video_url = ""

@@ -75,9 +75,10 @@ SCHEMA = {
         "hook_text": {"type": "STRING"},
         "beats": {"type": "ARRAY", "items": BEAT},
         "caption": {"type": "STRING"},
+        "sources": {"type": "ARRAY", "items": {"type": "STRING"}},
         "hashtags": {"type": "ARRAY", "items": {"type": "STRING"}},
     },
-    "required": ["topic", "title", "hook_text", "beats", "caption", "hashtags"],
+    "required": ["topic", "title", "hook_text", "beats", "caption", "hashtags", "sources"],
 }
 
 LABELS = re.compile(
@@ -85,6 +86,16 @@ LABELS = re.compile(
     r"|\[[^\]]*\]|\([^)]*(music|sfx|pause|beat)[^)]*\)|\*+|#+",
     re.IGNORECASE,
 )
+
+
+STRUCTURES = [
+    "TIMELINE - from the beginning to the twist to where they are now.",
+    "MYTH VS TRUTH - open with what everyone believes, then reveal what really happened.",
+    "TWO PEOPLE, ONE CHOICE - two people (or companies) faced the same choice; one won, one lost. Show both sides.",
+    "3 MISTAKES COUNTDOWN - the story told through the 3 biggest mistakes (or moves), counting down to number 1.",
+    "WHAT IF YOU HAD $1,000 - follow what $1,000 at the key moment would be worth now (real numbers only), "
+    "then tell the story behind it.",
+]
 
 
 def _prompt(cfg: dict, fmt: dict, research: str, used_topics: list[str], feedback: str) -> str:
@@ -103,6 +114,11 @@ AUDIENCE: {ch['audience']}
 LANGUAGE: {ch['language']}
 
 THIS VIDEO'S FORMAT: "{fmt['name']}" - {fmt['brief']}
+
+STORY SHAPE FOR THIS VIDEO (tell it this way so every video feels different): {cfg.get('_structure', STRUCTURES[0])}
+
+MONEZIC LESSON (required): the second-to-last beat starts with "The lesson:" and gives Monezic's own short,
+original takeaway in one sentence - an insight, not a cliche, and never financial advice.
 
 {research}
 
@@ -159,6 +175,8 @@ ALSO RETURN:
 - "hook_text": 2-5 punchy words shown huge on screen in the first 2 seconds (e.g. "YOU'RE PAYING FOR THIS", "THIS IS BAD").
 - "caption": 1-2 short sentences for the post + a question that invites comments.
 - "hashtags": 3-5 relevant hashtags without the # sign, lowercase.
+- "sources": 2-4 real, well-known sources for the facts used (publication or document names only, e.g.
+  "Forbes", "Bloomberg", "Apple 10-K filing", "The Wall Street Journal"). No URLs. Never invent a source.
 {feedback}"""
 
 
