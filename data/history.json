@@ -190,5 +190,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-17T22:05+00:00",
+    "topic": "US bank outages",
+    "title": "MAJOR US BANKS JUST CRASHED",
+    "format": "Money news",
+    "kind": "news",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "fact/short",
+    "seconds": 71.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261117-2205.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=CmkkXUpO0u0",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df2-e4Djst9/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7709266838298856725",
+        "error": ""
+      }
+    }
   }
 ]
