@@ -248,5 +248,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-18T22:02+00:00",
+    "topic": "Michael Dell's $1,000 computer business",
+    "title": "The $1,000 Gamble That Built an Empire",
+    "format": "Business you can start",
+    "kind": "business",
+    "plan": "https://thecreator-suleiman.github.io/wealth-factory-/plans/20261118-2202.html",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "fact/long",
+    "seconds": 84.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261118-2202.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=f5fC8yDhYFs",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df5jDz7leqH/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7709637420861361428",
+        "error": ""
+      }
+    }
   }
 ]
