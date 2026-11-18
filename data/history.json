@@ -219,5 +219,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-18T14:24+00:00",
+    "topic": "Ray Kroc McDonald's takeover story",
+    "title": "How One Man Stole McDonald's",
+    "format": "Behind the success",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "stop/long",
+    "seconds": 84.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261118-1424.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=8TjxelJXJ9c",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df4yu-8AHYz/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7709527769906040065",
+        "error": ""
+      }
+    }
   }
 ]
