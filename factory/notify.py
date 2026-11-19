@@ -55,6 +55,9 @@ def advice(error: str) -> str:
     if any(k in e for k in ("unauthor", "401", "403", "token", "api key", "apikey", "expired")) and "buffer" in e:
         return ("👉 Buffer key expired or rejected: buffer.com → Settings → API → create a new key, then GitHub → "
                 "repo Settings → Secrets → update BUFFER_API_KEY.")
+    if "limit" in e and ("daily" in e or "posting" in e or "upload" in e):
+        return ("👉 Daily upload limit hit (more than 2 posts in 24 h). Nothing to reconnect. Open Buffer → the failed "
+                "post → Retry later today. Verifying the YouTube channel (youtube.com/verify) raises the limit.")
     if any(k in e for k in ("reconnect", "disconnected", "not connected", "channel", "permission", "authoriz")):
         return "👉 Open Buffer and reconnect the account marked ❌ (log in again). Takes 2 minutes."
     if "gemini" in e or "generativelanguage" in e or "429" in e or "quota" in e:
