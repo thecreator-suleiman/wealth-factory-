@@ -44,7 +44,7 @@ def publish_freebie(cfg: dict, story: dict, kind: str, run_id: str) -> str:
 
 
 def wait_for_slot(cfg: dict) -> None:
-    """Hold a finished video until the next posting time (if it is less than 70 minutes away)."""
+    """Hold a finished video until the next posting time (if it is less than 100 minutes away)."""
     import time as _t
     from datetime import timedelta
     now = datetime.now(timezone.utc)
@@ -59,7 +59,7 @@ def wait_for_slot(cfg: dict) -> None:
     if best is None:
         return
     wait = (best - now).total_seconds()
-    if 0 < wait <= 70 * 60:
+    if 0 < wait <= 100 * 60:
         log(f"Video ready early - waiting {wait / 60:.0f} min to post at {best:%H:%M} UTC")
         _t.sleep(wait)
 

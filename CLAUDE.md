@@ -4,7 +4,7 @@ Owner: Suleiman (Kigali, UTC+2). Wants SHORT answers, honesty, minimal token use
 Never ask for or accept secret keys in chat (they live in GitHub Secrets).
 
 ## What it is
-Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (00:00 + 16:00 Kigali) to YouTube, TikTok,
+Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (02:00 + 14:00 Kigali, 12 h apart) to YouTube, TikTok,
 Instagram (via Buffer API), report to Telegram + WhatsApp (Whatabot), IG reels auto-shared to FB Page "Monezic".
 Repo: thecreator-suleiman/wealth-factory- (public). Free plans site: GitHub Pages /docs (branded).
 Claude is NOT used by the pipeline - only for fixes/upgrades.
@@ -21,7 +21,7 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 - factory/voice.py - edge-tts Andrew Multilingual (main), Andrew Neural, then Kokoro am_michael backup. Never female.
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
-- .github/workflows/factory.yml - crons 13:20/21:20 UTC + backups 14:05/22:05; inputs post, test_backup.
+- .github/workflows/factory.yml - crons 10:50/22:50 UTC (70 min early) + backups 12:45/00:45; inputs post, test_backup.
 
 ## Pending (do in order)
 1. Sat 21 Nov: restyle stickmen like owner's "image 3" (hand-drawn marker look: curved limbs, mitten hands,

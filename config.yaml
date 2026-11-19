@@ -46,7 +46,7 @@ music:
 posting:
   # Exact posting times (UTC). Runs start ~40 min early, finish the video, then wait.
   # 10:00 UTC = 12:00 Kigali, 22:00 UTC = 00:00 Kigali
-  times_utc: ["14:00", "22:00"]   # 16:00 + 00:00 Kigali = 10am + 6pm New York
+  times_utc: ["00:00", "12:00"]   # 02:00 + 14:00 Kigali = 8pm + 8am New York (12 h apart)
   platforms: ["tiktok", "instagram", "youtube"]
   youtube_category: "27"          # 27 = Education
   # AI label per platform, following each platform's own rules:
