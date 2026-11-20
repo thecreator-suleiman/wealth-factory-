@@ -17,6 +17,7 @@ MODELS = [
 
 API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _FOUND: list[str] = []
+_SPENT: set[str] = set()
 
 
 def _models() -> list[str]:
@@ -444,7 +445,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     backup_best = None
     for attempt in range(1, 7):
         story = None
-        for model in _models() + ["groq"]:
+        for model in [m for m in _models() if m not in _SPENT] + ["groq"]:
             try:
                 story = _clean(_call(model, key, _prompt(cfg, fmt, research, used_topics, feedback)))
                 story["model"] = model
@@ -452,6 +453,8 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
             except Exception as e:  # noqa: BLE001
                 errors.append(str(e))
                 log(f"Writer error: {e}")
+                if "exceeded your current quota" in str(e):
+                    _SPENT.add(model)  # daily free quota used up - don't wait on it, go to the backup
         if story is None:
             continue
         issues = _problems(story, cfg)
@@ -461,7 +464,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
             words = len(story["script"].split())
             if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.0:
                 best = story
-            if story.get("model") == "groq" and len(story["beats"]) >= 7 and words >= 140:
+            if story.get("model") == "groq" and len(story["beats"]) >= 6 and words >= 110:
                 backup_best = story  # backup writer: slightly short is better than no video
             feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(issues)
             continue

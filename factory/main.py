@@ -124,7 +124,8 @@ def run() -> int:
                 story = write_story(cfg, fmt, style, [h["topic"] for h in history])
                 break
             except RuntimeError as e:
-                busy = any(k in str(e) for k in ("503", "429", "UNAVAILABLE", "high demand", "quota"))
+                busy = (any(k in str(e) for k in ("503", "429", "UNAVAILABLE", "high demand"))
+                        and "exceeded your current quota" not in str(e))  # daily quota won't clear by waiting
                 if not busy or attempt == 4:
                     raise
                 log(f"Gemini busy - waiting {3 + attempt * 2} min, then trying again")

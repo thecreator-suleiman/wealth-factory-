@@ -95,6 +95,9 @@ def report(cfg: dict, story: dict, results: dict | None, run_url: str) -> str:
 
 
 # ---------------------------------------------------------------- WhatsApp (CallMeBot, free)
+_LAST_WA = 0.0
+
+
 def send_whatsapp(text: str) -> None:
     """Sends a WhatsApp message to your own phone (CallMeBot or Whatabot, both free).
     Skipped quietly if neither is set up."""
@@ -109,10 +112,20 @@ def send_whatsapp(text: str) -> None:
         services.append(("Whatabot", ["https://api.whatabot.net/whatsapp/sendMessage",
                                       "http://api.whatabot.net/whatsapp/sendMessage"],
                          {"phone": phone, "apikey": env("WHATABOT_API_KEY", required=False)}))
+    import time as _t
+    global _LAST_WA
     for name, urls, params in services:
         for url in urls:
             try:
+                gap = 6 - (_t.time() - _LAST_WA)  # Whatabot allows 1 message per 5 s
+                if gap > 0:
+                    _t.sleep(gap)
                 r = requests.get(url, params={**params, "text": text[:1500]}, timeout=60)
+                _LAST_WA = _t.time()
+                if r.status_code == 429:
+                    _t.sleep(7)
+                    r = requests.get(url, params={**params, "text": text[:1500]}, timeout=60)
+                    _LAST_WA = _t.time()
                 if r.status_code == 200 and "ERROR" not in r.text.upper()[:300]:
                     log(f"WhatsApp message sent ({name}).")
                     return
