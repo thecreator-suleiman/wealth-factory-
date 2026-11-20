@@ -164,9 +164,26 @@ def run() -> int:
             if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
                 wait_for_slot(cfg)
             step = "putting the video online"
-            video_url = host_video(video, f"{run_id}.mp4")
+            for attempt in range(3):  # GitHub hiccups pass in a minute
+                try:
+                    video_url = host_video(video, f"{run_id}.mp4")
+                    break
+                except Exception as e:  # noqa: BLE001
+                    if attempt == 2:
+                        raise
+                    log(f"Hosting failed ({e}) - retrying in 60 s")
+                    time.sleep(60)
             step = "posting to social media"
             results = post_everywhere(cfg, story, video_url)
+            # Self-repair: retry platforms that failed for a temporary reason (not limits or logins).
+            permanent = ("limit", "authoriz", "permission", "reconnect", "login", "token")
+            retry = [p for p, r in results.items()
+                     if not r.get("ok") and not any(k in (r.get("error") or "").lower() for k in permanent)]
+            if retry:
+                log(f"Posting failed on {', '.join(retry)} - retrying in 5 min")
+                time.sleep(300)
+                again = post_everywhere({**cfg, "posting": {**cfg["posting"], "platforms": retry}}, story, video_url)
+                results.update({p: r for p, r in again.items() if r.get("ok") or p in retry})
         else:
             log("Test run: not posting to social media.")
 
@@ -174,7 +191,7 @@ def run() -> int:
         send_video(cfg, video, f"<b>{html.escape(story['title'])}</b>")
         delivered = send_text(cfg, report(cfg, story, results, run_url))
         send_whatsapp(whatsapp_report(story, results))
-        for msg in share_messages(story, results):  # forward-ready: one link each
+        for msg in share_messages(story, results)[:1]:  # forward-ready YouTube message only (WhatsApp limits)
             send_whatsapp(msg)
 
         if results is not None:
