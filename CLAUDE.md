@@ -35,6 +35,10 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    tools/make_music.py): whoosh on scene change, pop on big text, cash register on money, impact on fall/shock,
    riser into hook, ding on lesson. Mix in finish_video under voice. VFX in Cairo: zoom punch on key words,
    particles/confetti, glow, light flash on reveals. No Blender (too slow/fragile on free GitHub runners).
+1e. Voice test (owner asked): github.com/debpalash/VoiceStudio (AGPL-3.0 app, too heavy for the pipeline).
+   Its default engine k2-fsa/OmniVoice (GGUF, runs on CPU) could CLONE the owner's own voice from his trailer
+   recording. Test speed + quality on a GitHub CPU runner (90 s narration must take < ~15 min) and check the
+   model weights' licence. Only switch if clearly better than Andrew; keep Andrew as fallback.
 2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
    Send for approval before publishing.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
