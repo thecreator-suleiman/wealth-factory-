@@ -306,5 +306,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-19T23:29+00:00",
+    "topic": "Steve Jobs Apple 1985 Ouster",
+    "title": "He Lost It All. Then He Won.",
+    "format": "Business you can start",
+    "kind": "business",
+    "plan": "https://thecreator-suleiman.github.io/wealth-factory-/plans/20261119-2329.html",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "fact/short",
+    "seconds": 64.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261119-2329.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=8aXcyUK5Q2g",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df8UdCSCgDa/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7710036738785283346",
+        "error": ""
+      }
+    }
   }
 ]
