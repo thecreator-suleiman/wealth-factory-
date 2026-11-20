@@ -39,6 +39,11 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    Its default engine k2-fsa/OmniVoice (GGUF, runs on CPU) could CLONE the owner's own voice from his trailer
    recording. Test speed + quality on a GitHub CPU runner (90 s narration must take < ~15 min) and check the
    model weights' licence. Only switch if clearly better than Andrew; keep Andrew as fallback.
+1f. Retention formula from github.com/mromidev/claude-animated-shorts STYLE_BIBLE (MIT; measured on 20 viral
+   shorts): narration 3.5-4.1 words/s (ours ~2.5 - too slow: raise rate / fit to ~3.7 w/s), hook = paradox stated
+   as fact in sentence 1 with no setup, one mystery beat ("Wait...?"), pivot "You see,", ironic payoff in last
+   1-2 lines, video ENDS on the payoff (shorten outro/end card), 55-70 s. Their 3D Remotion pipeline is too heavy
+   for free runners - borrow the formula only.
 2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
    Send for approval before publishing.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
