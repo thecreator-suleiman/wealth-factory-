@@ -335,5 +335,34 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-20T13:56+00:00",
+    "topic": "Enron's energy trading fraud",
+    "title": "How ENRON Bet the Farm",
+    "format": "The one decision",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "stop/long",
+    "seconds": 82.9,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261120-1356.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=wNjhe6v7BZw",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/Df90q4QHLcY/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7710254093909986567",
+        "error": ""
+      }
+    }
   }
 ]
