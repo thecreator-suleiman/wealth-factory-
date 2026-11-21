@@ -7,6 +7,7 @@ title: Free Plans
 Practical, free plans from our videos. New ones every week.
 
 <!-- list -->
+- [Free guide: Anthropic AI staff IPO millions](plans/20261121-1341.html)
 - [Free guide: Flutterwave African payments startup valuation and growth](plans/20261121-0655.html)
 - [Free guide: Blockbuster rejected Netflix buyout offer](plans/20261121-0643.html)
 - [Free guide: Wise vs traditional banks remittance fees](plans/20261121-0604.html)

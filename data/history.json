@@ -393,5 +393,31 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-21T13:41+00:00",
+    "topic": "Anthropic AI staff IPO millions",
+    "title": "Anthropic Staff Became Millionaires Overnight",
+    "format": "Free money tool",
+    "kind": "tool",
+    "plan": "https://thecreator-suleiman.github.io/wealth-factory-/plans/20261121-1341.html",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "script": "",
+    "seconds": 62.7,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261121-1341.mp4",
+    "results": {
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgAZbGeAokG/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7710624642397949192",
+        "error": ""
+      }
+    }
   }
 ]
