@@ -7,6 +7,7 @@ title: Free Plans
 Practical, free plans from our videos. New ones every week.
 
 <!-- list -->
+- [Free guide: Blockbuster rejected Netflix buyout offer](plans/20261121-0643.html)
 - [Free guide: Wise vs traditional banks remittance fees](plans/20261121-0604.html)
 - [Free business plan: Steve Jobs Apple 1985 Ouster](plans/20261119-2329.html)
 - [Free business plan: Michael Dell's $1,000 computer business](plans/20261118-2202.html)
