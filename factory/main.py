@@ -8,7 +8,7 @@ import shutil
 import sys
 import time
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from .common import DATA, WORK, load_config, log, read_json, write_json
 from .notify import advice, report, send_text, send_video, send_whatsapp, share_messages, whatsapp_report
@@ -128,6 +128,10 @@ def run() -> int:
         from .hooks import formulas_for
         cfg["_structure"] = STRUCTURES[(n // 4 + n) % len(STRUCTURES)]
         cfg["_hooks"] = formulas_for(n)
+        # trending names: one Gemini search per day is enough - reuse the last run's list if under 20 h old
+        last = next((h for h in reversed(history) if h.get("trending")), None)
+        if last and datetime.now(timezone.utc) - datetime.fromisoformat(last["date"]) < timedelta(hours=20):
+            cfg["_trending"] = last["trending"]
         log(f"Test variant: opening={opening}, length={length}")
         for attempt in range(5):  # Google "high demand" spikes pass in minutes - be patient
             try:
@@ -229,6 +233,7 @@ def run() -> int:
                 "voice": voice_name,
                 "variant": f"{opening}/{length}",
                 "part": part,
+                "trending": story.get("_trending") or cfg.get("_trending") or [],
                 "script": story["script"] if part == 1 else "",
                 "seconds": round(total, 1),
                 "video": video_url,

@@ -529,6 +529,8 @@ def trending_names(key: str) -> list[str]:
 def _better_hook(key: str, story: dict) -> dict:
     """Ask for 6 alternative opening lines, score them with the hook scorer, keep the strongest (incl. the original)."""
     first = story["beats"][0]["text"]
+    if score_hook(first)[0] >= 52:
+        return story  # already strong - save the free Gemini quota
     prompt = (f"This is the first line of a 60-second money story short about: {story['topic']}.\n"
               f"Current first line: \"{first}\"\nStory (for facts only - use ONLY facts from it):\n{story['script'][:1800]}\n\n"
               "Write 6 better first lines. Each: 9-16 words, a PARADOX STATED AS FACT, no setup, no greeting, "
@@ -570,7 +572,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     key = env("GEMINI_API_KEY")
     kind = fmt.get("kind", "story")
     research = _research(key, fmt, used_topics, kind == "news")
-    if kind != "news" and cfg.get("_part") != 2 and "_trending" not in cfg:
+    if kind != "news" and cfg.get("_part") != 2 and cfg.get("_trending") is None:
         cfg["_trending"] = trending_names(key)
     part = cfg.get("_part", 0)
 
@@ -605,10 +607,12 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
             log(f"Story needs another try: {issues}")
             only_length = all("spoken words" in i for i in hard)
             words = len(story["script"].split())
-            if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.8:
-                best = story
-            if story.get("model") == "groq" and len(story["beats"]) >= 6 and words >= 150:
-                backup_best = story  # backup writer: slightly short is better than no video
+            short_ok = cfg["video"]["target_seconds"] * (WPS_LO - 0.5)  # ~144 words: a little short is fine
+            if only_length and len(story["beats"]) >= 8 and words >= short_ok:
+                if best is None or abs(words - short_ok * 1.2) < abs(len(best["script"].split()) - short_ok * 1.2):
+                    best = story
+            if len(story["beats"]) >= 6 and words >= 130:
+                backup_best = story  # any writer: slightly short is better than no video
             feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(i.replace("SOFT: ", "") for i in issues)
             continue
         ok, probs = _fact_check(key, story)
