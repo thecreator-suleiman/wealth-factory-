@@ -193,6 +193,12 @@ def run() -> int:
             if 6 <= hour < 18 and "youtube" in cfg["posting"]["platforms"]:
                 cfg["posting"]["platforms"] = [p for p in cfg["posting"]["platforms"] if p != "youtube"]
                 log("Day slot: posting to TikTok + Instagram only (YouTube gets the 02:00 video).")
+            if "youtube" in cfg["posting"]["platforms"]:
+                from .trailer_post import youtube_uploads
+                recent = youtube_uploads(datetime.now(timezone.utc), hours=24.5)  # history = run start times
+                if len(recent) >= 2:
+                    cfg["posting"]["platforms"] = [p for p in cfg["posting"]["platforms"] if p != "youtube"]
+                    log(f"YouTube already has {len(recent)} uploads in the last 24 h (e.g. the trailer) - skipping it.")
             results = post_everywhere(cfg, story, video_url)
             # Self-repair: retry platforms that failed for a temporary reason (not limits or logins).
             permanent = ("limit", "authoriz", "permission", "reconnect", "login", "token")

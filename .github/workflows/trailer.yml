@@ -1,0 +1,39 @@
+name: Schedule channel trailer (YouTube only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      due_at:
+        description: "UTC time, e.g. 2026-11-22T12:00:00Z (= 14:00 Kigali)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wealth-factory
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests pyyaml
+      - name: Schedule on YouTube through Buffer
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          DUE_AT: ${{ inputs.due_at }}
+        run: python -m factory.trailer_post
+      - name: Remember the extra YouTube upload
+        run: |
+          git config user.name "wealth-factory-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/youtube_extra.json
+          git commit -q -m "trailer scheduled ${{ inputs.due_at }}"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
