@@ -24,14 +24,15 @@ def main() -> None:
     first = dt.datetime.fromisoformat(hist[0]["date"]) if hist else now
     expected = max(1, min(14, round((now - first).total_seconds() / 43200)))  # 2 a day since the first post
     lines = ["🩺 <b>Monezic weekly check</b>", f"Videos made: {len(week)} / {expected}"]
-    lines += [f"{'✅' if n >= len(week) and n else '⚠️'} {p.title()}: {n} posted" for p, n in ok.items()]
+    need = {p: (len(week) // 2 if p == "youtube" else len(week)) for p in ok}  # YouTube = 1/day
+    lines += [f"{'✅' if n >= need[p] and n else '⚠️'} {p.title()}: {n} posted" for p, n in ok.items()]
     if len(week) < expected - 2:
         lines.append("⚠️ Fewer videos than planned - check the ❌ messages this week.")
     days = (BUFFER_KEY_EXPIRES - now.date()).days
     if days < 45:
         lines.append(f"🔑 Buffer API key expires in {days} days: buffer.com → Settings → API → new key, "
                      "then update BUFFER_API_KEY in GitHub Secrets.")
-    if all(n == len(week) for n in ok.values()) and len(week) >= expected - 2:
+    if all(n >= need[p] for p, n in ok.items()) and len(week) >= expected - 2:
         lines.append("All good - nothing to do. 👍")
     msg = "\n".join(lines)
     send_text(cfg, msg)
