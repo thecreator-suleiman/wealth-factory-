@@ -120,9 +120,8 @@ def run() -> int:
         log(f"Format: {fmt['name']} ({kind})" + (f" - Part {part}" if part else ""))
 
         step = "writing the story"
-        # Growth test (until Sun 22 Nov): alternate the opening (A = "stop scrolling" first, B = hook first).
-        # Length is now fixed by the retention formula: fast voice (~3.7 words/s), 56-70 s, ends on the payoff.
-        opening = "stop" if n % 2 == 0 else "fact"
+        # Opening test ended 21 Nov: hook first, always. Clear pace (~2.95 words/s), 61-70 s, ends on the payoff.
+        opening = "hook"  # owner 21 Nov: the hook (paradox stated as fact) is always the very first line
         length = "fast"
         cfg["_opening"] = opening
         from .script import STRUCTURES

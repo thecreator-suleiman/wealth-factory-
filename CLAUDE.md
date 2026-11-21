@@ -11,12 +11,14 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 
 ## Key files
 - config.yaml - channel, rules, mix [story x7, business, tool, news], formats, posting times.
-- factory/main.py - run(): growth test (opening stop/fact by n%2; length now fixed "fast" 61-70s), Part 1/2
+- factory/main.py - run(): opening = "hook" ALWAYS (owner 21 Nov: no "stop scrolling"; stop/fact test ended),
+  61-70 s, Part 1/2
   (story slot n%7==3 -> Part 1; next video = Part 2, script kept in history), 5 rotating STRUCTURES,
   hook formulas rotate, no end card (ends on payoff, 0.35s tail), backup-run guard (skip if posted <5h ago).
 - factory/script.py - Gemini writer (auto model discovery + 404 replacement learning), Groq backup writer
   (GROQ_API_KEY), retention formula prompt (paradox hook, "Wait,...?", "You see,", payoff last, loop ending,
-  ~3.7 w/s = 214-249 words), trending_names() (Gemini search, 1 call/run), _problems hard + SOFT issues
+  ~2.95 w/s = 176-198 words - owner said 3.7 w/s was too fast to follow), _better_hook() (6 alternative
+  first lines from Gemini, hook scorer keeps the best), trending_names() (Gemini search, 1 call/run), _problems hard + SOFT issues
   (soft = hook score/title/formula beats; accepted from try 3), _guarantee_shape (opener; question + FOLLOW/OFFER
   on the LESSON beat; payoff is last; Part 1 adds "Part 2 is next" line).
 - factory/hooks.py - 21 hook formulas (factory/ytkit/hooks.json) + ported hookscore (reject <46) + title linter.
@@ -28,8 +30,8 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
   chair / black desk+laptop, light outline places (clouds, road lane, clock, plant), figures ~0.8 scale.
   VFX: zoom punch on numbers, dash confetti, floating $ / code symbols, big green text fades out,
   scenes fade in from white. Captions + top banner: Archivo Black (video.py), white caps, green banner.
-- factory/voice.py - edge-tts Andrew Multilingual (main, rate +35%), Andrew Neural, then Kokoro am_michael backup.
-  Never female. fit_pace() -> ~3.7 words/s, 61-70 s (stays >60 s for TikTok rewards).
+- factory/voice.py - edge-tts Andrew Multilingual (main, rate +12%), Andrew Neural, then Kokoro am_michael backup.
+  Never female. fit_pace() -> ~2.95 words/s (config words_per_second), 61-70 s (>60 s for TikTok rewards).
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
 - .github/workflows/factory.yml - crons 10:50/22:50 UTC (70 min early) + backups 12:45/00:45; inputs post, test_backup.
@@ -44,8 +46,8 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    factory/trailer_post.py; extra uploads logged in data/youtube_extra.json; main.py skips YouTube if
    >=2 uploads in last 24.5 h (Mon 02:00 slot may skip YouTube because of the trailer - expected).
 2b. DONE 21 Nov: renderer matched to owner's sample video (approved, merged from branch sample-style).
-3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
-   (Viewed vs swiped away; start: 39% stayed). Keep the winner.
+3. Sun 22 Nov: compare old growth test (history.json "variant" stop/* vs fact/*) with owner's YouTube Studio
+   screenshots (Viewed vs swiped away; start: 39% stayed). Hook-first is already live (owner's call).
 4. Next week: weekly long YouTube video (6-10 min, hand-drawn whiteboard style, ideally owner's voice).
    Check if Buffer can post long videos; else YouTube API (owner does one-time OAuth).
 5. ~29 Nov: TikTok review (stuck ~115 views) - if <200 avg, new TikTok account in Buffer.

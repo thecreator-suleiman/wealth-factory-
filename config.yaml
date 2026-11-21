@@ -39,8 +39,8 @@ video:
 voice:
   main: "en-US-AndrewMultilingualNeural"   # calm, natural storyteller (free Microsoft neural voice)
   backup: "en-US-AndrewNeural"
-  rate: "+35%"                    # fast, steady storyteller (retention formula)
-  words_per_second: 3.7           # final pace after fitting (viral story shorts: 3.5-4.1)
+  rate: "+12%"                    # clear storyteller pace (owner: +35% was too fast to follow)
+  words_per_second: 2.95          # final pace: easy to catch for non-native listeners
   pitch: "-2Hz"                   # a little deeper
 
 music:

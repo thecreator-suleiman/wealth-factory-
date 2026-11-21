@@ -79,7 +79,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     lines = []
     if hook:
         lines.append(
-            f"Dialogue: 1,{_ts(0)},{_ts(4.0)},Hook,,0,0,0,,"
+            f"Dialogue: 1,{_ts(0)},{_ts(2.6)},Hook,,0,0,0,,"
             f"{{\\pos({w // 2},{int(h * 0.105)})\\fad(0,300)}}"
             f"{_two_lines(_esc(hook.upper()))}"
         )

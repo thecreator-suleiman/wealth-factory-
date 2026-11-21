@@ -100,7 +100,7 @@ STRUCTURES = [
 ]
 
 
-WPS_LO, WPS_HI = 3.35, 3.9          # spoken words per second target (retention formula: ~3.7)
+WPS_LO, WPS_HI = 2.75, 3.1          # spoken words per second (owner: clear pace, ~2.95)
 
 LOOP = ("\n   LOOP ENDING: write the payoff so its last words flow straight back into the HOOK when the short "
         "replays\n   (last line + beat 1 read as one sentence), e.g. payoff \"...and that's exactly why\" -> hook "
@@ -162,7 +162,7 @@ Do NOT repeat any of these past topics (pick a different person or company):
 
 STRUCTURE (12-16 "beats"; each beat = 1-2 short spoken sentences + the scene shown while they are spoken).
 Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds at a FAST, steady pace - about
-3.7 words per second, like the best story shorts). Sentences ~10-14 words, contractions, no filler.
+3 words per second - clear, easy to follow). Sentences ~8-12 words, simple words, contractions, no filler.
 This is a retention formula measured on viral story shorts - follow it exactly:
 1. HOOK (beat 1, 10-16 words): a PARADOX STATED AS FACT. No setup, no greeting, no "stop scrolling".
    A named person or company did something that sounds dumb or impossible, with real stakes and a number,
@@ -472,7 +472,9 @@ def _guarantee_shape(story: dict, kind: str = "story", opening: str = "stop", pa
                   beats[-1]["text"], flags=re.I).strip()
     if last:
         beats[-1]["text"] = last
-    if opening == "fact":
+    if opening == "hook":
+        pass  # retention formula: the hook IS the first line - no "stop scrolling" opener
+    elif opening == "fact":
         # Shocking fact first (the hook), then "give me one minute".
         if re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I) and len(beats) > 1:
             beats.pop(0)
@@ -524,6 +526,46 @@ def trending_names(key: str) -> list[str]:
     return []
 
 
+def _better_hook(key: str, story: dict) -> dict:
+    """Ask for 6 alternative opening lines, score them with the hook scorer, keep the strongest (incl. the original)."""
+    first = story["beats"][0]["text"]
+    prompt = (f"This is the first line of a 60-second money story short about: {story['topic']}.\n"
+              f"Current first line: \"{first}\"\nStory (for facts only - use ONLY facts from it):\n{story['script'][:1800]}\n\n"
+              "Write 6 better first lines. Each: 9-16 words, a PARADOX STATED AS FACT, no setup, no greeting, "
+              "names the person or company, includes a real number from the story, and leaves the 'how/why' open "
+              "(e.g. \"Kodak invented the digital camera, then buried it to protect film.\"). "
+              "Reply with ONLY a JSON array of 6 strings.")
+    body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.8, "maxOutputTokens": 800}}
+    cands = []
+    for model in [m for m in _models() if m not in _SPENT][:3]:
+        try:
+            r = requests.post(API.format(model=model), headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                              json=body, timeout=90)
+            if r.status_code != 200:
+                raise RuntimeError(f"HTTP {r.status_code}")
+            txt = "".join(p.get("text", "") for p in r.json()["candidates"][0]["content"]["parts"] if not p.get("thought"))
+            m = re.search(r"\[.*\]", txt, re.S)
+            cands = [str(c).strip() for c in json.loads(m.group(0))] if m else []
+            break
+        except Exception as e:  # noqa: BLE001
+            log(f"Hook rewrite with {model} unavailable: {e}")
+    if not cands:
+        try:
+            m = re.search(r"\[.*\]", _groq(prompt, False, 800), re.S)
+            cands = [str(c).strip() for c in json.loads(m.group(0))] if m else []
+        except Exception as e:  # noqa: BLE001
+            log(f"Hook rewrite backup unavailable: {e}")
+    cands = [c for c in cands if 6 <= len(c.split()) <= 20 and not re.match(r"\s*(stop|wait|hey|today)\b", c, re.I)]
+    scored = sorted([(score_hook(c)[0], c) for c in cands + [first]], reverse=True)
+    best_score, best = scored[0]
+    if best != first:
+        log(f"Hook upgraded {score_hook(first)[0]} -> {best_score}: {best}")
+        story["beats"][0]["text"] = best
+        story["script"] = " ".join(b["text"] for b in story["beats"])
+    return story
+
+
 def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dict:
     key = env("GEMINI_API_KEY")
     kind = fmt.get("kind", "story")
@@ -573,16 +615,17 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
         if not ok and attempt < 6:
             feedback = ("\nYOUR LAST SCRIPT HAD FACTUAL ERRORS - FIX THEM (or drop those claims):\n- " + "\n- ".join(probs))
             continue
+        story = _better_hook(key, story)
         story = shape(story)
         log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats, "
-            f"hook score {score_hook(story['beats'][0 if cfg.get('_opening') == 'fact' else 1]['text'])[0]})")
+            f"hook score {score_hook(story['beats'][0 if cfg.get('_opening') in ('fact', 'hook') else 1]['text'])[0]})")
         return story
     if best:
         log("Using the closest story (length slightly off target).")
-        return shape(best)
+        return shape(_better_hook(key, best))
     if backup_best:
         log("Gemini unavailable - using the backup writer's story.")
-        return shape(backup_best)
+        return shape(_better_hook(key, backup_best))
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
 
 
