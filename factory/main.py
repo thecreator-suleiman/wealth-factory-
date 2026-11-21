@@ -174,6 +174,11 @@ def run() -> int:
                     log(f"Hosting failed ({e}) - retrying in 60 s")
                     time.sleep(60)
             step = "posting to social media"
+            # YouTube refuses a 3rd upload within ~24 h, so it gets only the evening-US video (02:00 Kigali).
+            hour = datetime.now(timezone.utc).hour
+            if 6 <= hour < 18 and "youtube" in cfg["posting"]["platforms"]:
+                cfg["posting"]["platforms"] = [p for p in cfg["posting"]["platforms"] if p != "youtube"]
+                log("Day slot: posting to TikTok + Instagram only (YouTube gets the 02:00 video).")
             results = post_everywhere(cfg, story, video_url)
             # Self-repair: retry platforms that failed for a temporary reason (not limits or logins).
             permanent = ("limit", "authoriz", "permission", "reconnect", "login", "token")

@@ -4,8 +4,8 @@ Owner: Suleiman (Kigali, UTC+2). Wants SHORT answers, honesty, minimal token use
 Never ask for or accept secret keys in chat (they live in GitHub Secrets).
 
 ## What it is
-Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (02:00 + 14:00 Kigali, 12 h apart) to YouTube, TikTok,
-Instagram (via Buffer API), report to Telegram + WhatsApp (Whatabot), IG reels auto-shared to FB Page "Monezic".
+Free, automatic GitHub Actions pipeline: 2 stickman Shorts/day (02:00 + 14:00 Kigali, 12 h apart) to TikTok + Instagram;
+YouTube gets only the 02:00 video (owner chose 1/day: YouTube refused 3 uploads in ~24 h). All (via Buffer API), report to Telegram + WhatsApp (Whatabot), IG reels auto-shared to FB Page "Monezic".
 Repo: thecreator-suleiman/wealth-factory- (public). Free plans site: GitHub Pages /docs (branded).
 Claude is NOT used by the pipeline - only for fixes/upgrades.
 
