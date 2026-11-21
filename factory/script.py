@@ -583,6 +583,7 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     errors = []
     best = None
     backup_best = None
+    any_story = None
     for attempt in range(1, 7):
         story = None
         for model in [m for m in _models() if m not in _SPENT] + ["groq"]:
@@ -597,6 +598,9 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
                     _SPENT.add(model)  # daily free quota used up - don't wait on it, go to the backup
         if story is None:
             continue
+        if len(story.get("beats", [])) >= 5 and (any_story is None or
+                len(story["script"].split()) > len(any_story["script"].split())):
+            any_story = story  # last resort: the longest real story beats no video at all
         issues = _problems(story, cfg)
         hard = [i for i in issues if not i.startswith("SOFT: ")]
         if attempt >= 3 and not hard:
@@ -630,6 +634,12 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
     if backup_best:
         log("Gemini unavailable - using the backup writer's story.")
         return shape(_better_hook(key, backup_best))
+    if any_story:
+        log("Using the longest story written (slightly off target) so the video still goes out on time.")
+        try:
+            return shape(any_story)
+        except Exception as e:  # noqa: BLE001
+            log(f"Last-resort story could not be shaped: {e}")
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
 
 
