@@ -23,9 +23,11 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
   MIT, Jake Schincariol (factory/ytkit/LICENSE).
 - factory/sfx.py - numpy SFX (whoosh/pop/cash/impact/riser/ding) placed from beats; mixed in finish_video.
 - factory/stickman.py - Cairo renderer: 47 actions (action()), fx, 10 places (draw_place), chairs/desks,
-  9 camera moves, _prepare() no-repeat. Style = "marker" (21 Nov, owner's image 3): curved limbs, mitten hands,
-  shoe feet, oval head, green/red mood glow. VFX: zoom punch on numbers/big-text words, confetti on
-  celebrations, glow behind big text, light flash on reveals (You see / Wait / headline / payoff).
+  9 camera moves, _prepare() no-repeat. Style = "sample" (approved 21 Nov, owner's sample video): solid black
+  round head + white face, straight thick limbs, round fists, green name-tag bubble, green floor shadow, grey
+  chair / black desk+laptop, light outline places (clouds, road lane, clock, plant), figures ~0.8 scale.
+  VFX: zoom punch on numbers, dash confetti, floating $ / code symbols, big green text fades out,
+  scenes fade in from white. Captions + top banner: Archivo Black (video.py), white caps, green banner.
 - factory/voice.py - edge-tts Andrew Multilingual (main, rate +35%), Andrew Neural, then Kokoro am_michael backup.
   Never female. fit_pace() -> ~3.7 words/s, 61-70 s (stays >60 s for TikTok rewards).
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
@@ -41,8 +43,7 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    6b013ab25e993799d8589f92. File: media branch trailer/monezic_trailer.mp4. Tool: workflow trailer.yml +
    factory/trailer_post.py; extra uploads logged in data/youtube_extra.json; main.py skips YouTube if
    >=2 uploads in last 24.5 h (Mon 02:00 slot may skip YouTube because of the trailer - expected).
-2b. Owner wants renderer upgraded to match a SAMPLE VIDEO's animation style (not received yet - ask to re-attach).
-   Show frames side by side + short test video BEFORE going live.
+2b. DONE 21 Nov: renderer matched to owner's sample video (approved, merged from branch sample-style).
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
    (Viewed vs swiped away; start: 39% stayed). Keep the winner.
 4. Next week: weekly long YouTube video (6-10 min, hand-drawn whiteboard style, ideally owner's voice).
