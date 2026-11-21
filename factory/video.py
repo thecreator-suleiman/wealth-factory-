@@ -100,8 +100,9 @@ def _pick_music(cfg: dict, seed: str) -> Path | None:
 
 
 def finish_video(cfg: dict, scenes_video: Path, voice: Path, words: list, hook: str,
-                 total: float, length: float, folder: Path) -> Path:
-    """Adds captions, progress bar, voice and piano to the drawn stickman video."""
+                 total: float, length: float, folder: Path, beats: list | None = None,
+                 times: list | None = None) -> Path:
+    """Adds captions, progress bar, voice, piano and sound effects to the drawn stickman video."""
     v = cfg["video"]
     w, h, fps = v["width"], v["height"], v["fps"]
     ass = folder / "captions.ass"
@@ -116,20 +117,29 @@ def finish_video(cfg: dict, scenes_video: Path, voice: Path, words: list, hook: 
         f"[cap][bar]overlay=x='-w+w*t/{total:.2f}':y=0:shortest=1[v]"
     )
     tail = length - total
+    fx = ""
+    if beats and times:
+        from .sfx import build_track
+        fx_path = build_track(beats, times, length, folder / "sfx.wav")
+        fx_idx = 3 if music else 2
+        fx = f"[{fx_idx}:a]aresample=48000,volume={cfg.get('sfx', {}).get('volume_db', -4)}dB[fx];"
     if music:
         log(f"Music: {music.stem}")
         inputs += ["-stream_loop", "-1", "-i", str(music)]
         vol = cfg.get("music", {}).get("volume_db", -17)
-        audio_graph = (
-            f";[1:a]apad=pad_dur={tail:.2f},asplit=2[vo][sc];"
+        mixed = (
             f"[2:a]volume={vol}dB,atrim=0:{length:.2f},afade=t=in:d=1.5,"
-            f"afade=t=out:st={max(length - 2.0, 0):.2f}:d=2.0[mu];"
+            f"afade=t=out:st={max(length - 1.0, 0):.2f}:d=1.0[mu];"
             f"[mu][sc]sidechaincompress=threshold=0.05:ratio=4:attack=20:release=400[duck];"
-            f"[vo][duck]amix=inputs=2:duration=first:normalize=0,"
-            f"loudnorm=I=-14:TP=-1.5:LRA=11[a]"
         )
+        audio_graph = f";[1:a]apad=pad_dur={tail:.2f},asplit=2[vo][sc];" + mixed + fx
+        audio_graph += ("[vo][duck][fx]amix=inputs=3" if fx else "[vo][duck]amix=inputs=2")
     else:
-        audio_graph = f";[1:a]apad=pad_dur={tail:.2f},loudnorm=I=-14:TP=-1.5:LRA=11[a]"
+        audio_graph = f";[1:a]apad=pad_dur={tail:.2f}[vo];" + fx
+        audio_graph += ("[vo][fx]amix=inputs=2" if fx else "[vo]anull")
+    audio_graph += ":duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]" if (fx or music) else ",loudnorm=I=-14:TP=-1.5:LRA=11[a]"
+    if fx:
+        inputs += ["-i", str(fx_path)]
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", *inputs,
          "-filter_complex", video_graph + audio_graph,

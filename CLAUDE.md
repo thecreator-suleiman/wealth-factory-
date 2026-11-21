@@ -11,41 +11,33 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
 
 ## Key files
 - config.yaml - channel, rules, mix [story x7, business, tool, news], formats, posting times.
-- factory/main.py - run(): growth test (opening stop/fact by n%2, length long 97s/short 70s by (n//2)%2),
-  5 rotating STRUCTURES, Gemini-busy waits, sources in caption, backup-run guard (skip if posted <5h ago).
+- factory/main.py - run(): growth test (opening stop/fact by n%2; length now fixed "fast" 61-70s), Part 1/2
+  (story slot n%7==3 -> Part 1; next video = Part 2, script kept in history), 5 rotating STRUCTURES,
+  hook formulas rotate, no end card (ends on payoff, 0.35s tail), backup-run guard (skip if posted <5h ago).
 - factory/script.py - Gemini writer (auto model discovery + 404 replacement learning), Groq backup writer
-  (GROQ_API_KEY), _guarantee_shape (opener, closing question + "Comment below, and follow Monezic so you can
-  find us again.", "The lesson:" beat), place + pose schema.
+  (GROQ_API_KEY), retention formula prompt (paradox hook, "Wait,...?", "You see,", payoff last, loop ending,
+  ~3.7 w/s = 214-249 words), trending_names() (Gemini search, 1 call/run), _problems hard + SOFT issues
+  (soft = hook score/title/formula beats; accepted from try 3), _guarantee_shape (opener; question + FOLLOW/OFFER
+  on the LESSON beat; payoff is last; Part 1 adds "Part 2 is next" line).
+- factory/hooks.py - 21 hook formulas (factory/ytkit/hooks.json) + ported hookscore (reject <46) + title linter.
+  MIT, Jake Schincariol (factory/ytkit/LICENSE).
+- factory/sfx.py - numpy SFX (whoosh/pop/cash/impact/riser/ding) placed from beats; mixed in finish_video.
 - factory/stickman.py - Cairo renderer: 47 actions (action()), fx, 10 places (draw_place), chairs/desks,
-  9 camera moves, _prepare() no-repeat. Style = "clean round" (style 6).
-- factory/voice.py - edge-tts Andrew Multilingual (main), Andrew Neural, then Kokoro am_michael backup. Never female.
+  9 camera moves, _prepare() no-repeat. Style = "marker" (21 Nov, owner's image 3): curved limbs, mitten hands,
+  shoe feet, oval head, green/red mood glow. VFX: zoom punch on numbers/big-text words, confetti on
+  celebrations, glow behind big text, light flash on reveals (You see / Wait / headline / payoff).
+- factory/voice.py - edge-tts Andrew Multilingual (main, rate +35%), Andrew Neural, then Kokoro am_michael backup.
+  Never female. fit_pace() -> ~3.7 words/s, 61-70 s (stays >60 s for TikTok rewards).
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
 - .github/workflows/factory.yml - crons 10:50/22:50 UTC (70 min early) + backups 12:45/00:45; inputs post, test_backup.
 
 ## Pending (do in order)
-1. Sat 21 Nov: restyle stickmen like owner's "image 3" (hand-drawn marker look: curved limbs, mitten hands,
-   shoe feet, oval head, soft green/red mood glow behind figure). Keep all actions/places/cameras.
-1b. Borrow from github.com/Jakeschincariol/youtube-agent-skill (MIT, offline Python): 21 hook formulas
-   (skills/yt-script/hooks.json) into the Gemini prompt, hookscore.py to reject weak hooks automatically,
-   title.py linter for titles. Credit MIT license. Do NOT install as Claude skills (costs tokens, manual).
-1c. Also Saturday: loop endings (last line flows into first), Part 1/Part 2 cliffhanger stories
-   (some videos), trending names this week (Gemini search). Owner approved all three.
-1d. Also Saturday: SOUND EFFECTS + 2D VFX. Generate own SFX with numpy (no licence issues, like
-   tools/make_music.py): whoosh on scene change, pop on big text, cash register on money, impact on fall/shock,
-   riser into hook, ding on lesson. Mix in finish_video under voice. VFX in Cairo: zoom punch on key words,
-   particles/confetti, glow, light flash on reveals. No Blender (too slow/fragile on free GitHub runners).
-1e. Voice test (owner asked): github.com/debpalash/VoiceStudio (AGPL-3.0 app, too heavy for the pipeline).
-   Its default engine k2-fsa/OmniVoice (GGUF, runs on CPU) could CLONE the owner's own voice from his trailer
-   recording. Test speed + quality on a GitHub CPU runner (90 s narration must take < ~15 min) and check the
-   model weights' licence. Only switch if clearly better than Andrew; keep Andrew as fallback.
-1f. Retention formula from github.com/mromidev/claude-animated-shorts STYLE_BIBLE (MIT; measured on 20 viral
-   shorts): narration 3.5-4.1 words/s (ours ~2.5 - too slow: raise rate / fit to ~3.7 w/s), hook = paradox stated
-   as fact in sentence 1 with no setup, one mystery beat ("Wait...?"), pivot "You see,", ironic payoff in last
-   1-2 lines, video ENDS on the payoff (shorten outro/end card), 55-70 s. Their 3D Remotion pipeline is too heavy
-   for free runners - borrow the formula only.
-2. Channel trailer from owner's own voice recording (re-attached in chat; pick the cleaner take; ~40s script).
-   Send for approval before publishing.
+1-1f. DONE Sat 21 Nov (marker restyle, hooks/scorer/title linter, loops, Part 1/2, trending, SFX+VFX,
+   retention formula). Voice clone (OmniVoice): REJECTED - model weights are CC-BY-NC (non-commercial; Monezic
+   is monetised) + audio tokenizer under Boson Higgs licence. Keep Andrew. Owner's own recordings are fine.
+2. Channel trailer: made from take 2 of owner's recording (0:51-1:30, no stumbles), 43 s incl. end card.
+   Sent for approval 21 Nov - NOT published. Recording is NOT in the repo (privacy).
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
    (Viewed vs swiped away; start: 39% stayed). Keep the winner.
 4. Next week: weekly long YouTube video (6-10 min, hand-drawn whiteboard style, ideally owner's voice).

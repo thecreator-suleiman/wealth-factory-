@@ -3,7 +3,7 @@
 This makes **2 short videos every day, by itself**, and posts each one to
 **TikTok, Instagram Reels and YouTube Shorts**. It costs $0.
 
-Every video is a 65–80 second true money story told with stickman drawings
+Every video is a 61–70 second true money story told with stickman drawings
 (black figures on white, green highlights), a calm storyteller voice, soft original
 piano music, big captions and a progress bar.
 
@@ -57,3 +57,11 @@ To post one right now: run the workflow again and **tick the box**.
 - `config.yaml` - the channel's topic, voice, video length, posting times
 - `data/history.json` - every video posted so far (prevents repeats)
 - `factory/` - the program
+
+## Credits
+- Hook formulas and the hook/title scoring rules are adapted from
+  [youtube-agent-skill](https://github.com/Jakeschincariol/youtube-agent-skill) by Jake Schincariol (MIT License,
+  see `factory/ytkit/LICENSE`).
+- The retention formula (pace, paradox hook, "You see," pivot, payoff ending) follows the STYLE_BIBLE study in
+  [claude-animated-shorts](https://github.com/mromidev/claude-animated-shorts) (MIT License).
+- All music and sound effects are generated in code (`tools/make_music.py`, `factory/sfx.py`).

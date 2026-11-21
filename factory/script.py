@@ -5,6 +5,7 @@ import re
 import requests
 
 from .common import env, log
+from .hooks import formulas_for, hook_issue, score_hook, title_issues
 
 # Tried in order. If one is busy, retired or out of free quota, the next is used.
 MODELS = [
@@ -99,13 +100,45 @@ STRUCTURES = [
 ]
 
 
+WPS_LO, WPS_HI = 3.35, 3.9          # spoken words per second target (retention formula: ~3.7)
+
+LOOP = ("\n   LOOP ENDING: write the payoff so its last words flow straight back into the HOOK when the short "
+        "replays\n   (last line + beat 1 read as one sentence), e.g. payoff \"...and that's exactly why\" -> hook "
+        "\"Kodak invented\n   the digital camera, then buried it.\" Viewers who loop count as rewatches.")
+
+
+def _part_text(cfg: dict) -> tuple[str, str]:
+    """(part block, ending rule) for Part 1 / Part 2 stories and normal loop-ending videos."""
+    if cfg.get("_part") == 1:
+        return ("THIS IS PART 1 OF 2. Tell the first half of the story (who, the rise, the big decision) "
+                "and stop at the most tense moment.",
+                "\n   PART 1 ENDING: the payoff is a CLIFFHANGER instead - stop right before the outcome "
+                "(\"...and then the phone rang.\"). The system adds the Part 2 line itself.")
+    if cfg.get("_part") == 2:
+        return ("THIS IS PART 2 OF 2 - same story, same people. Part 1 script (already posted):\n"
+                + cfg.get("_part1", "")[:2500]
+                + "\nBeat 1 must be a one-line recap that is still a hook (e.g. \"Part 2: Kodak buried the "
+                "future, and now the bill arrives.\"). Then tell what happened next and how it ended. Do not "
+                "repeat Part 1's facts except the recap.", LOOP)
+    return "", LOOP
+
+
 def _prompt(cfg: dict, fmt: dict, research: str, used_topics: list[str], feedback: str) -> str:
     ch, vid = cfg["channel"], cfg["video"]
-    words_lo = int(vid["target_seconds"] * 2.25)
-    words_hi = int(vid["target_seconds"] * 2.65)
+    words_lo = int(vid["target_seconds"] * WPS_LO)
+    words_hi = int(vid["target_seconds"] * WPS_HI)
     avoid = "\n".join(f"- {t}" for t in used_topics[-80:]) or "- (none yet)"
+    if cfg.get("_part") == 2:
+        avoid = "- (Part 2: continue the same topic)"
     rules = "\n".join(f"- {r}" for r in ch["rules"])
     handle = ch.get("handle", "@monezic")
+    hooks = cfg.get("_hooks", "")
+    part, ending = _part_text(cfg)
+    names = cfg.get("_trending") or []
+    trending = ("TRENDING THIS WEEK (people/companies in the news - people are searching for them): "
+                + "; ".join(names) + ".\nIf one of them has a real, well-documented story that fits this video's "
+                "format, PREFER it (say in one line why it matters now). Otherwise ignore this list."
+                ) if names and fmt.get("kind") != "news" and not cfg.get("_part") == 2 else ""
     return f"""You are the head writer of "{ch['name']}" ({handle}), a fast-growing money channel in the style of
 Casually Finance: casual, witty, skeptical, urgent but analytical. Videos are animated STICKMAN explainers
 (black stick figures on white, green highlights).
@@ -120,31 +153,35 @@ STORY SHAPE FOR THIS VIDEO (tell it this way so every video feels different): {c
 
 MONEZIC LESSON (required): the second-to-last beat starts with "The lesson:" and gives Monezic's own short,
 original takeaway in one sentence - an insight, not a cliche, and never financial advice.
+{part}
 
 {research}
 
 Do NOT repeat any of these past topics (pick a different person or company):
 {avoid}
 
-STRUCTURE (10-14 "beats"; each beat = 1-2 short spoken sentences + the scene shown while they are spoken).
-Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds).
-1. HOOK (beat 1, max 14 words): create instant tension about the VIEWER or a mystery. Use one of these patterns:
-   "X just did Y... and you're the one who pays for it."  /  "Something strange is happening to [thing]."
-   "Nobody's talking about this, but [big thing] is quietly [breaking]."  /  "[Rich person/company] just made a
-   move that should scare you."  Never open with a plain statistic. No greeting, no "stop scrolling".
+STRUCTURE (12-16 "beats"; each beat = 1-2 short spoken sentences + the scene shown while they are spoken).
+Total spoken words: {words_lo}-{words_hi} (about {vid['target_seconds']} seconds at a FAST, steady pace - about
+3.7 words per second, like the best story shorts). Sentences ~10-14 words, contractions, no filler.
+This is a retention formula measured on viral story shorts - follow it exactly:
+1. HOOK (beat 1, 10-16 words): a PARADOX STATED AS FACT. No setup, no greeting, no "stop scrolling".
+   A named person or company did something that sounds dumb or impossible, with real stakes and a number,
+   e.g. "Kodak invented the digital camera, then buried it to protect film." Use one of these hook formulas:
+{hooks}
    Beat 2 must then deliver the first shocking fact.
-2. WHO (1-2 beats): who this person or company was before it all happened, with one concrete detail.
-3. THE MOVE (2-3 beats): the decision, risk or mistake - explain it like you're talking to a smart friend,
-   with one funny casual analogy or label (like "hot potato", "all-in", "musical chairs").
-4. THE TWIST (1-2 beats): "But here's the part nobody tells you..." - the hidden angle behind the success
-   or failure.
-5. THE RESULT (1-2 beats): how it ended - the win or the loss, with a real number.
-6. THE LESSON (1 beat): the money lesson in one strong sentence.
-7. CLOSE (last beat): ask the viewer ONE direct question they will want to answer in the comments
-   (e.g. "Would you have sold? Tell me in the comments."), then a short call to follow, e.g.
-   "And follow for more." Vary the wording every time. Do not say the channel name.
-Short punchy sentences. Sound like a person, not a news anchor.
-
+2. SETTING (1-2 beats): who, where, when - present tense, one concrete detail (a year, a city, a number).
+3. ESCALATION (3-5 beats): the decision, risk or mistake. People doubt, laugh or mock (one short in-character
+   line of dialogue is great), the stakes climb. One funny casual analogy or exaggeration joke.
+4. MYSTERY (1 beat): a question that starts with "Wait," - e.g. "Wait, why would anyone say no to that?"
+5. PIVOT (1-2 beats): a beat that starts with "You see," and reveals the real mechanism - the part nobody
+   tells you - with an everyday analogy.
+6. RESULT (1 beat): how it ended, with a real number.
+7. LESSON (second-to-last beat): starts with "The lesson:" + Monezic's own one-sentence takeaway, then ONE
+   direct question for the comments (e.g. "Would you have sold?"). Do not say the channel name.
+8. PAYOFF (LAST beat, 1-2 short sentences): the ironic twist that lands the story. The video ENDS on this
+   line - no goodbye, no "follow", no "thanks for watching".{ending}
+Short punchy sentences. Sound like a person telling a friend, not a news anchor.
+{trending}
 FOR EACH BEAT'S SCENE:
 - "characters": 0-3 stick figures. The pose is an ACTION that literally acts out what the voice says in that
   sentence, like a mime: losing everything = fall or kneel or cry, getting rich = fly_money or count_money or lift,
@@ -171,9 +208,11 @@ RULES:
 
 ALSO RETURN:
 - "topic": the subject in under 8 words (used to avoid repeats).
-- "title": a YouTube Shorts title under 60 characters: ominous, declarative, curiosity-driven but honest
-  (style: "X Is Breaking", "It's Worse Than You Think", "The Smart Money Is Leaving"). Max one ALL-CAPS word.
-- "hook_text": 2-5 punchy words shown huge on screen in the first 2 seconds (e.g. "YOU'RE PAYING FOR THIS", "THIS IS BAD").
+- "title": a YouTube Shorts title under 60 characters (best under 40): ominous, declarative, curiosity-driven
+  but honest, with the subject's NAME or a NUMBER in it (style: "Kodak Buried The Future", "Nokia Had 50%. Then 0").
+  Max one ALL-CAPS word. No hype words (amazing, insane, crazy, secret, ultimate, best).
+- "hook_text": 2-5 punchy words shown huge on screen in the first 2 seconds (e.g. "THEY SAID NO", "$0 TO $1B").
+  Do not repeat the title's words - it is a second hook.
 - "caption": 1-2 short sentences for the post + a question that invites comments.
 - "hashtags": 3-5 relevant hashtags without the # sign, lowercase.
 - "sources": 2-4 real, well-known sources for the facts used (publication or document names only, e.g.
@@ -332,23 +371,35 @@ def _clean(story: dict, n_images: int = 0) -> dict:
 
 
 def _problems(story: dict, cfg: dict) -> list[str]:
+    """Hard problems (length, beat count) + soft ones (hook score, title, formula beats) prefixed 'SOFT:'.
+    Soft problems are sent back to the writer for the first tries, then accepted."""
     words = len(story["script"].split())
-    lo = int(cfg["video"]["target_seconds"] * 2.15)
-    hi = int(cfg["video"]["target_seconds"] * 2.8)
+    lo = int(cfg["video"]["target_seconds"] * (WPS_LO - 0.2))
+    hi = int(cfg["video"]["target_seconds"] * (WPS_HI + 0.25))
     issues = []
     if words < lo:
         issues.append(f"The beats have only {words} spoken words in total; they must have at least {lo}.")
     if words > hi:
         issues.append(f"The beats have {words} spoken words in total; they must have at most {hi}. Make it shorter.")
     if len(story["beats"]) < 8:
-        issues.append("Write 10-14 beats.")
+        issues.append("Write 12-16 beats.")
+        return issues
+    first = story["beats"][0]["text"]
+    if re.match(r"\s*(stop|wait|hey|hi|welcome|today)\b", first, re.I):
+        issues.append("Beat 1 must be the hook itself (a paradox stated as fact), not a greeting or 'stop scrolling'.")
     else:
-        first = story["beats"][0]["text"].lower()
-        if not (re.search(r"\byou|\byour", first) or "?" in first or "nobody" in first or "strange" in first):
-            issues.append('Beat 1 is not a hook. It must speak to the viewer ("you"/"your") or open a mystery, '
-                          'e.g. "Something strange is happening to your paycheck." Rewrite beat 1.')
-        if "?" not in story["beats"][-1]["text"]:
-            issues.append("The last beat must ask the viewer a question to answer in the comments.")
+        bad = hook_issue(first)
+        if bad:
+            issues.append("SOFT: " + bad)
+    must, _nice = title_issues(story.get("title", ""), story.get("hook_text", ""))
+    issues += ["SOFT: " + m for m in must]
+    txt = story["script"].lower()
+    if "you see," not in txt:
+        issues.append('SOFT: Add the pivot beat that starts with "You see," (the real mechanism).')
+    if not re.search(r"\bwait\b[^.?!]*\?", txt):
+        issues.append('SOFT: Add one mystery beat - a question that starts with "Wait," .')
+    if "?" not in " ".join(b["text"] for b in story["beats"][-2:]):
+        issues.append("SOFT: The lesson beat (second-to-last) must end with a question for the comments.")
     return issues
 
 
@@ -398,6 +449,8 @@ QUESTIONS = [
     "Which side are you on?",
 ]
 FOLLOW = "Comment below, and follow Monezic so you can find us again."
+PART2 = ["Part 2 is next. Follow Monezic so you don't miss it.",
+         "Follow Monezic - part 2 drops next."]
 
 
 OFFER = {
@@ -406,14 +459,19 @@ OFFER = {
 }
 
 
-def _guarantee_shape(story: dict, kind: str = "story", opening: str = "stop") -> dict:
-    """Every video opens with 'stop scrolling' and ends with a comment question - no exceptions."""
+def _guarantee_shape(story: dict, kind: str = "story", opening: str = "stop", part: int = 0) -> dict:
+    """Opening line, a comment question + follow line on the LESSON beat, and the video ends on the payoff."""
     import random
     rnd = random.Random(story.get("topic", ""))
     opener = {"text": rnd.choice(OPENERS),
               "characters": [{"pose": "present", "mood": "happy", "label": ""}],
               "prop": "clock", "big_text": "", "headline": ""}
     beats = story["beats"]
+    # the payoff must be the last word: strip any goodbye / follow / subscribe sentence the writer added
+    last = re.sub(r"[^.?!]*\b(follow|subscribe|thanks for watching|see you)\b[^.?!]*[.?!]?", "",
+                  beats[-1]["text"], flags=re.I).strip()
+    if last:
+        beats[-1]["text"] = last
     if opening == "fact":
         # Shocking fact first (the hook), then "give me one minute".
         if re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I) and len(beats) > 1:
@@ -422,23 +480,61 @@ def _guarantee_shape(story: dict, kind: str = "story", opening: str = "stop") ->
                                                        "Stay with me for one minute."])))
     elif not re.match(r"\s*(stop|wait)\b", beats[0]["text"], re.I):
         beats.insert(0, opener)
-    if "?" not in beats[-1]["text"]:
-        beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(QUESTIONS)
-    beats[-1]["text"] = re.sub(r"\s*(Tell (me|us)|Let (me|us) know|Drop it|Comment)[^.?!]*(below|comments?)[.!]?", "", beats[-1]["text"], flags=re.I).strip()
-    if "follow monezic" not in beats[-1]["text"].lower():
-        beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + FOLLOW
-    if kind in OFFER:
-        beats.append({"text": OFFER[kind],
-                      "characters": [{"pose": "point", "mood": "happy", "label": ""}],
-                      "prop": "document", "big_text": "FREE", "headline": ""})
+    cta = beats[-2] if len(beats) >= 3 else beats[-1]
+    cta["text"] = re.sub(r"\s*(Tell (me|us)|Let (me|us) know|Drop it|Comment)[^.?!]*(below|comments?)[.!]?", "",
+                         cta["text"], flags=re.I).strip()
+    if "?" not in cta["text"]:
+        cta["text"] = cta["text"].rstrip() + " " + rnd.choice(QUESTIONS)
+    if part == 1:
+        beats[-1]["text"] = beats[-1]["text"].rstrip() + " " + rnd.choice(PART2)
+    elif kind in OFFER:
+        cta["text"] = cta["text"].rstrip() + " " + OFFER[kind]
+    elif "follow monezic" not in cta["text"].lower():
+        cta["text"] = cta["text"].rstrip() + " " + FOLLOW
     story["script"] = " ".join(b["text"] for b in beats)
+    if part:
+        story["title"] = re.sub(r"\s*\(?part \d\)?", "", story["title"], flags=re.I).strip()[:58] + f" (Part {part})"
+        story["part"] = part
     return story
+
+
+def trending_names(key: str) -> list[str]:
+    """People/companies in money news this week (Gemini + Google Search). [] if unavailable."""
+    prompt = ("Use Google Search. List 8 people or companies that are trending in business, money or tech news "
+              "THIS WEEK worldwide (include 1-2 African ones if any). Reply with ONLY a JSON array of strings, "
+              "each 'Name - why trending (max 8 words)'.")
+    body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "tools": [{"google_search": {}}],
+            "generationConfig": {"temperature": 0.3, "maxOutputTokens": 800}}
+    for model in _models()[:3]:
+        try:
+            r = requests.post(API.format(model=model),
+                              headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                              json=body, timeout=120)
+            if r.status_code != 200:
+                raise RuntimeError(f"HTTP {r.status_code}")
+            txt = "".join(p.get("text", "") for p in r.json()["candidates"][0]["content"]["parts"])
+            m = re.search(r"\[.*\]", txt, re.S)
+            names = [str(x).strip()[:80] for x in json.loads(m.group(0))][:8] if m else []
+            if names:
+                log(f"Trending this week ({model}): {'; '.join(names)}")
+                return names
+        except Exception as e:  # noqa: BLE001
+            log(f"Trending search with {model} unavailable: {e}")
+    return []
 
 
 def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dict:
     key = env("GEMINI_API_KEY")
-    trending = fmt.get("kind") == "news"
-    research = _research(key, fmt, used_topics, trending)
+    kind = fmt.get("kind", "story")
+    research = _research(key, fmt, used_topics, kind == "news")
+    if kind != "news" and cfg.get("_part") != 2 and "_trending" not in cfg:
+        cfg["_trending"] = trending_names(key)
+    part = cfg.get("_part", 0)
+
+    def shape(s):
+        return _guarantee_shape(s, kind, cfg.get("_opening", "stop"), part)
+
     feedback = ""
     errors = []
     best = None
@@ -458,29 +554,35 @@ def write_story(cfg: dict, fmt: dict, style: str, used_topics: list[str]) -> dic
         if story is None:
             continue
         issues = _problems(story, cfg)
+        hard = [i for i in issues if not i.startswith("SOFT: ")]
+        if attempt >= 3 and not hard:
+            if issues:
+                log(f"Accepting minor issues after {attempt} tries: {issues}")
+            issues = []  # hook/title/formula wishes are not worth losing the video over
         if issues:
             log(f"Story needs another try: {issues}")
-            only_length = all("spoken words" in i for i in issues)
+            only_length = all("spoken words" in i for i in hard)
             words = len(story["script"].split())
-            if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.0:
+            if only_length and len(story["beats"]) >= 8 and words >= cfg["video"]["target_seconds"] * 2.8:
                 best = story
-            if story.get("model") == "groq" and len(story["beats"]) >= 6 and words >= 110:
+            if story.get("model") == "groq" and len(story["beats"]) >= 6 and words >= 150:
                 backup_best = story  # backup writer: slightly short is better than no video
-            feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(issues)
+            feedback = "\nFIX THESE PROBLEMS FROM YOUR LAST TRY:\n- " + "\n- ".join(i.replace("SOFT: ", "") for i in issues)
             continue
         ok, probs = _fact_check(key, story)
         if not ok and attempt < 6:
             feedback = ("\nYOUR LAST SCRIPT HAD FACTUAL ERRORS - FIX THEM (or drop those claims):\n- " + "\n- ".join(probs))
             continue
-        story = _guarantee_shape(story, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
-        log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats)")
+        story = shape(story)
+        log(f"Story ready: {story['topic']} ({len(story['script'].split())} words, {len(story['beats'])} beats, "
+            f"hook score {score_hook(story['beats'][0 if cfg.get('_opening') == 'fact' else 1]['text'])[0]})")
         return story
     if best:
         log("Using the closest story (length slightly off target).")
-        return _guarantee_shape(best, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
+        return shape(best)
     if backup_best:
         log("Gemini unavailable - using the backup writer's story.")
-        return _guarantee_shape(backup_best, fmt.get("kind", "story"), cfg.get("_opening", "stop"))
+        return shape(backup_best)
     raise RuntimeError("Could not write a story. Last errors: " + " | ".join(errors[-3:]))
 
 

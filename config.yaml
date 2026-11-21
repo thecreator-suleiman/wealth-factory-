@@ -25,10 +25,13 @@ channel:
     - "Never give personal financial or investment advice. Teach through the story only."
     - "No get-rich-quick promises, no gambling, no crypto pumping, no scams."
     - "Urgent and skeptical is good; panic, doom predictions and fake certainty are not. Never predict exact crashes or dates."
-    - "Do not write 'stop scrolling' or 'give me one minute' - the system adds that opening line itself. Beat 1 is the hook right after it."
+    - "Do not write 'stop scrolling' or 'give me one minute' - the system adds that opening line itself. Beat 1 is the hook."
+    - "Do not end with 'follow', 'subscribe' or a goodbye - the system adds the follow line before the payoff."
 
 video:
-  target_seconds: 97        # about 1:35 per video (TikTok pays for 60s+)
+  target_seconds: 64        # retention formula: 55-70 s (TikTok pays for 60s+)
+  min_seconds: 61            # stay above 60 s (TikTok rewards)
+  max_seconds: 70
   width: 1080
   height: 1920
   fps: 30
@@ -36,7 +39,8 @@ video:
 voice:
   main: "en-US-AndrewMultilingualNeural"   # calm, natural storyteller (free Microsoft neural voice)
   backup: "en-US-AndrewNeural"
-  rate: "+4%"                     # calm but not slow
+  rate: "+35%"                    # fast, steady storyteller (retention formula)
+  words_per_second: 3.7           # final pace after fitting (viral story shorts: 3.5-4.1)
   pitch: "-2Hz"                   # a little deeper
 
 music:

@@ -16,7 +16,7 @@ from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_freebie, write_story
 from . import stickman
 from .video import FONT_DIR, finish_video
-from .voice import fit_length, make_voice
+from .voice import fit_pace, make_voice
 
 HISTORY = DATA / "history.json"
 
@@ -104,20 +104,31 @@ def run() -> int:
         options = [f for f in cfg["formats"] if f.get("kind", "story") == kind] or cfg["formats"]
         done_same_kind = sum(1 for h in history if h.get("kind", "story") == kind)
         fmt = options[done_same_kind % len(options)]
+        n = len(history)
+        # Part 1 / Part 2 cliffhanger stories: about one story in seven is split; Part 2 is the very next video.
+        prev = history[-1] if history else {}
+        part = 0
+        if prev.get("part") == 1 and prev.get("script"):
+            part = 2
+            kind = prev.get("kind", "story")
+            fmt = next((f for f in cfg["formats"] if f["name"] == prev.get("format")), fmt)
+            cfg["_part1"] = prev["script"]
+        elif kind == "story" and n % 7 == 3:
+            part = 1
+        cfg["_part"] = part
         style = ""
-        log(f"Format: {fmt['name']} ({kind})")
+        log(f"Format: {fmt['name']} ({kind})" + (f" - Part {part}" if part else ""))
 
         step = "writing the story"
-        # 1-week growth test: alternate the opening (A = "stop scrolling" first, B = shocking fact first)
-        # and the length (long ~1:35 / short ~1:10). Results are compared in YouTube Studio.
-        n = len(history)
+        # Growth test (until Sun 22 Nov): alternate the opening (A = "stop scrolling" first, B = hook first).
+        # Length is now fixed by the retention formula: fast voice (~3.7 words/s), 56-70 s, ends on the payoff.
         opening = "stop" if n % 2 == 0 else "fact"
-        length = "long" if (n // 2) % 2 == 0 else "short"
-        if length == "short":
-            cfg["video"]["target_seconds"] = 70
+        length = "fast"
         cfg["_opening"] = opening
         from .script import STRUCTURES
+        from .hooks import formulas_for
         cfg["_structure"] = STRUCTURES[(n // 4 + n) % len(STRUCTURES)]
+        cfg["_hooks"] = formulas_for(n)
         log(f"Test variant: opening={opening}, length={length}")
         for attempt in range(5):  # Google "high demand" spikes pass in minutes - be patient
             try:
@@ -134,18 +145,21 @@ def run() -> int:
 
         step = "recording the voice"
         voice, words, voice_name = make_voice(cfg, story["script"], folder)
-        voice, words, total = (fit_length(voice, words, 62.0, 80.0) if length == "short"
-                               else fit_length(voice, words))
+        voice, words, total = fit_pace(voice, words, cfg["voice"].get("words_per_second", 3.7),
+                                       cfg["video"].get("min_seconds", 61), cfg["video"].get("max_seconds", 70))
 
         step = "drawing the stickman scenes"
         stickman.set_font("Anton" if (FONT_DIR / "Anton-Regular.ttf").exists() else "DejaVu Sans")
         times = beat_times(story["beats"], words, total)
-        end_card = 3.0
-        scenes = stickman.render(story["beats"], times, end_card, folder / "scenes.mp4",
-                                 fps=cfg["video"]["fps"], handle=cfg["channel"].get("handle", "@monezic"))
+        tail = 0.35  # no end card: the video ends on the payoff and loops straight back into the hook
+        times[-1] = (times[-1][0], total + tail)
+        scenes = stickman.render(story["beats"], times, 0.0, folder / "scenes.mp4",
+                                 fps=cfg["video"]["fps"], handle=cfg["channel"].get("handle", "@monezic"),
+                                 words=words)
 
         step = "building the video"
-        video = finish_video(cfg, scenes, voice, words, story["hook_text"], total, total + end_card, folder)
+        video = finish_video(cfg, scenes, voice, words, story["hook_text"], total, total + tail, folder,
+                             beats=story["beats"], times=times)
 
         plan_url = ""
         if kind in ("business", "tool"):
@@ -209,6 +223,8 @@ def run() -> int:
                 "plan": plan_url,
                 "voice": voice_name,
                 "variant": f"{opening}/{length}",
+                "part": part,
+                "script": story["script"] if part == 1 else "",
                 "seconds": round(total, 1),
                 "video": video_url,
                 "results": results,

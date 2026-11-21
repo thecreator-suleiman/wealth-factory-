@@ -141,3 +141,20 @@ def fit_length(voice: Path, words: list, lo: float = 82.0, hi: float = 110.0):
     new_total = audio_seconds(out)
     log(f"Voice adjusted from {total:.1f}s to {new_total:.1f}s (x{factor:.2f})")
     return out, [(a / factor, b / factor, w) for a, b, w in words], new_total
+
+
+def fit_pace(voice: Path, words: list, wps: float = 3.7, lo: float = 56.0, hi: float = 70.0):
+    """Retention formula: narration at ~3.7 spoken words per second (viral story shorts run 3.5-4.1),
+    kept between lo and hi seconds. Uses ffmpeg atempo (pitch stays the same)."""
+    total = audio_seconds(voice)
+    n = max(len(words), 1)
+    want = min(max(n / wps, lo), hi)
+    factor = min(max(total / want, 0.9), 1.35)
+    if abs(factor - 1) < 0.02:
+        return voice, words, total
+    out = voice.with_name("voice_fit.mp3")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(voice),
+                    "-filter:a", f"atempo={factor:.4f}", str(out)], check=True)
+    new_total = audio_seconds(out)
+    log(f"Voice pace: {n / total:.2f} -> {n / new_total:.2f} words/s, {total:.1f}s -> {new_total:.1f}s (x{factor:.2f})")
+    return out, [(a / factor, b / factor, w) for a, b, w in words], new_total
