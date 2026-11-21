@@ -17,7 +17,7 @@ from . import stickman
 from .common import WORK, load_config, log
 from .main import beat_times
 from .script import _clean
-from .video import FONT_DIR, finish_video
+from .video import FONT_DIR, _font, finish_video
 from .voice import _estimate_timings, audio_seconds
 
 
@@ -38,7 +38,7 @@ def main() -> None:
                    check=True)
     total = audio_seconds(voice)
     words = _estimate_timings(story["script"], total)
-    stickman.set_font("Anton" if (FONT_DIR / "Anton-Regular.ttf").exists() else "DejaVu Sans")
+    stickman.set_font(_font()[0])
     times = beat_times(story["beats"], words, total)
     scenes = stickman.render(story["beats"], times, 3.0, folder / "scenes.mp4",
                              fps=cfg["video"]["fps"], handle=cfg["channel"].get("handle", "@monezic"))

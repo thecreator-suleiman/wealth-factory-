@@ -16,7 +16,7 @@ GREEN = (0.13, 0.77, 0.37)       # #22C55E
 DARK_GREEN = (0.09, 0.64, 0.29)  # #16A34A
 GREY = (0.55, 0.55, 0.58)
 RED = (0.86, 0.15, 0.15)
-LINE = 12
+LINE = 14
 
 POSES = ["stand", "walk", "run", "point", "cheer", "sad", "think", "shock", "sit", "hold", "present", "angry",
          "wave", "clap", "facepalm", "shrug", "count_money", "throw_money", "dig", "carry", "push", "kneel",
@@ -103,60 +103,44 @@ def text(ctx, s, x, y, size, color=INK, bold=True, align="center", outline=None)
 
 # ---------------------------------------------------------------- stick figure
 def _limb(ctx, x, y, a1, l1, a2, l2, end=None, d=1, s=1.0):
-    """Two-segment limb from (x, y), drawn as one smooth marker curve through the joint.
-    Angles in degrees, 0 = straight down, positive = to the right. end = "hand" (mitten) or "foot" (shoe)."""
+    """Two-segment limb from (x, y): straight thick ink strokes with a round joint (clean vector stickman).
+    Angles in degrees, 0 = straight down, positive = to the right. end = "hand" adds a small round fist."""
     r1, r2 = math.radians(a1), math.radians(a2)
     ex, ey = x + math.sin(r1) * l1, y + math.cos(r1) * l1
     hx, hy = ex + math.sin(r2) * l2, ey + math.cos(r2) * l2
-    # quadratic curve that passes through the elbow/knee: soft, hand-drawn bend instead of a hard angle
-    cx, cy = 2 * ex - (x + hx) / 2, 2 * ey - (y + hy) / 2
     ctx.move_to(x, y)
-    ctx.curve_to(x + (cx - x) * 2 / 3, y + (cy - y) * 2 / 3, hx + (cx - hx) * 2 / 3, hy + (cy - hy) * 2 / 3, hx, hy)
+    ctx.line_to(ex, ey)
+    ctx.line_to(hx, hy)
     stroke(ctx)
     if end == "hand":
-        _mitten(ctx, hx, hy, math.atan2(hy - ey, hx - ex), s)
-    elif end == "foot":
-        _shoe(ctx, hx, hy, (1 if hx - x > 6 * s else -1 if hx - x < -6 * s else d), s)
+        ctx.arc(hx, hy, 9.5 * s, 0, 2 * math.pi)
+        ctx.set_source_rgb(*INK); ctx.fill()
     return hx, hy
 
 
-def _mitten(ctx, x, y, ang, s):
-    """Mitten hand: small rounded blob with a thumb bump."""
-    ctx.save(); ctx.translate(x, y); ctx.rotate(ang)
-    ctx.save(); ctx.translate(8 * s, 0); ctx.scale(1.15, 0.85); ctx.arc(0, 0, 14 * s, 0, 2 * math.pi); ctx.restore()
-    ctx.set_source_rgb(*INK); ctx.fill()
-    ctx.arc(3 * s, -9 * s, 6.5 * s, 0, 2 * math.pi); ctx.fill()
+def _shadow(ctx, x, s):
+    """Soft light-green oval under the feet."""
+    ctx.save(); ctx.translate(x, GROUND + 2); ctx.scale(1, 0.16)
+    g = cairo.RadialGradient(0, 0, 0, 0, 0, 95 * s)
+    g.add_color_stop_rgba(0, *GREEN, 0.30); g.add_color_stop_rgba(0.7, *GREEN, 0.18); g.add_color_stop_rgba(1, *GREEN, 0)
+    ctx.arc(0, 0, 95 * s, 0, 2 * math.pi); ctx.set_source(g); ctx.fill()
     ctx.restore()
 
 
-def _shoe(ctx, x, y, d, s):
-    """Shoe foot: filled oval pointing forward."""
-    ctx.save(); ctx.translate(x + 12 * d * s, y + 2 * s); ctx.scale(1.0, 0.45)
-    ctx.arc(0, 0, 25 * s, 0, 2 * math.pi); ctx.restore()
-    ctx.set_source_rgb(*INK); ctx.fill()
-
-
-_GLOW_GREEN = {"cheer", "fly_money", "jump", "dance", "high_five", "clap", "confident", "laugh", "count_money", "lift"}
-_GLOW_RED = {"cry", "sad", "fall", "panic", "facepalm", "shock", "beg", "angry", "shake_fist", "tired"}
-
-
-def _glow(ctx, x, top, s, pose, mood):
-    """Soft green (good) / red (bad) mood glow behind the figure, like a marker-and-highlighter drawing."""
-    if mood == "happy" or (mood == "neutral" and pose in _GLOW_GREEN):
-        col = (0.13, 0.77, 0.37)
-    elif mood in ("sad", "angry", "shocked", "worried") or (mood == "neutral" and pose in _GLOW_RED):
-        col = (0.93, 0.27, 0.27)
-    else:
-        return
-    h = GROUND + 30 - top
-    ctx.save()
-    ctx.translate(x, GROUND + 10); ctx.scale(1.0, h / (150 * s))
-    g = cairo.RadialGradient(0, 0, 0, 0, 0, 150 * s)
-    g.add_color_stop_rgba(0, *col, 0.30); g.add_color_stop_rgba(0.55, *col, 0.16); g.add_color_stop_rgba(1, *col, 0)
-    ctx.set_source(g)
-    ctx.rectangle(-160 * s, -150 * s, 320 * s, 150 * s)
-    ctx.fill()
-    ctx.restore()
+def _tag(ctx, label, x, y, s):
+    """Name tag: green rounded bubble with a little pointer, dark bold text (sits above the head)."""
+    s = max(s, 1.0)  # tags stay readable even when the figure is drawn small
+    size = 34 * s
+    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    ctx.set_font_size(size)
+    w = ctx.text_extents(label).width + 34 * s
+    h = size * 1.45
+    rrect(ctx, x - w / 2, y - h, w, h, 12 * s)
+    ctx.move_to(x - 11 * s, y - 1); ctx.line_to(x, y + 13 * s); ctx.line_to(x + 11 * s, y - 1); ctx.close_path()
+    ctx.set_source_rgb(*GREEN); ctx.fill()
+    rrect(ctx, x - w / 2, y - h, w, h, 12 * s)
+    stroke(ctx, INK, 4 * s)
+    text(ctx, label, x, y - h / 2, size, INK)
 
 
 PLACES = ["auto", "office", "home", "bank", "street", "stage", "garage", "factory", "store", "market", "courtroom"]
@@ -186,6 +170,29 @@ def _window(ctx, x, y, w=220, h=260):
     _L(ctx, [(x, y + h / 2), (x + w, y + h / 2)], 5)
 
 
+def _clouds(ctx, t):
+    for cx, cy in ((200, 330), (760, 260)):
+        cx += (t * 6) % 40
+        for i, r in enumerate((34, 46, 38)):
+            ctx.arc(cx + i * 52, cy - (10 if i == 1 else 0), r, math.pi, 2 * math.pi)
+        stroke(ctx, BG, 5)
+
+
+def _wall_clock(ctx, x, y, t):
+    ctx.arc(x, y, 52, 0, 2 * math.pi); fill_stroke(ctx, (1, 1, 1), BG, 6)
+    a = t * 1.6  # the hand keeps ticking round
+    ctx.move_to(x, y); ctx.line_to(x + math.sin(a) * 38, y - math.cos(a) * 38); stroke(ctx, (0.45, 0.45, 0.47), 6)
+    ctx.move_to(x, y); ctx.line_to(x + 22, y); stroke(ctx, (0.45, 0.45, 0.47), 6)
+
+
+def _plant(ctx, x, g):
+    _R(ctx, x - 32, g - 80, 64, 80, BGF, BG, 5, 4)
+    for a in (-30, -12, 8, 26):
+        ctx.move_to(x, g - 80)
+        ctx.line_to(x + math.sin(math.radians(a)) * 120, g - 80 - math.cos(math.radians(a)) * 120)
+        stroke(ctx, (0.55, 0.8, 0.62), 6)
+
+
 def draw_place(ctx, place, t):
     G = GROUND
     if place == "office":
@@ -210,8 +217,9 @@ def draw_place(ctx, place, t):
             _R(ctx, bx, G - bh, bw, bh, BGF, BG, 5, 2)
             for wy in range(int(G - bh + 40), int(G - 80), 90):
                 for wx in range(int(bx + 25), int(bx + bw - 40), 60):
-                    _R(ctx, wx, wy, 30, 40, (0.9, 0.94, 0.98), BG, 3, 2)
-        _L(ctx, [(0, G + 40), (1080, G + 40)], 5)
+                    _R(ctx, wx, wy, 30, 40, (0.86, 0.96, 0.89) if (wx + wy) % 3 else BGF, BG, 3, 2)
+        _L(ctx, [(900, G), (900, G - 430), (960, G - 430), (960, G - 400)], 6)            # street lamp
+        _clouds(ctx, t)
     elif place == "stage":
         ctx.move_to(540, 300); ctx.line_to(230, G); ctx.line_to(850, G); ctx.close_path()
         ctx.set_source_rgba(1, 0.85, 0.3, 0.13); ctx.fill()
@@ -253,25 +261,29 @@ def draw_place(ctx, place, t):
             _R(ctx, cx - 30, 500, 60, G - 500, BGF, BG, 6, 4)
 
 
+
 def _furniture(ctx, pose, x, hip_y, d, s):
-    """Chair under a sitting figure; a desk in front when typing."""
+    """Grey office chair under a sitting figure; a solid black desk + laptop in front when typing."""
+    CH = (0.62, 0.62, 0.64)
     if pose in ("sit", "type"):
         sx = x - 30 * d * s
-        _R(ctx, sx - 90 * s, hip_y + 5, 180 * s, 26 * s, (0.92, 0.86, 0.78), INK, 7, 6)          # seat
-        _L(ctx, [(sx - 80 * d * s, hip_y + 5), (sx - 80 * d * s, hip_y - 230 * s)], 9, INK)    # back
-        _L(ctx, [(sx - 70 * s, hip_y + 30 * s), (sx - 70 * s, GROUND)], 8, INK)
-        _L(ctx, [(sx + 70 * s, hip_y + 30 * s), (sx + 70 * s, GROUND)], 8, INK)
+        _L(ctx, [(sx - 85 * s, hip_y + 12 * s), (sx + 75 * s, hip_y + 12 * s)], 12 * s, CH)        # seat
+        _L(ctx, [(sx - 80 * d * s, hip_y + 12 * s), (sx - 92 * d * s, hip_y - 210 * s)], 11 * s, CH)  # back
+        _L(ctx, [(sx, hip_y + 12 * s), (sx, GROUND - 14 * s)], 10 * s, CH)                       # post
+        _L(ctx, [(sx - 70 * s, GROUND - 6 * s), (sx + 70 * s, GROUND - 6 * s)], 10 * s, CH)        # base
     if pose == "type":
         dx = x + 250 * d * s
         top = hip_y - 40 * s
-        _R(ctx, dx - 150 * s, top, 300 * s, 24 * s, (0.92, 0.86, 0.78), INK, 7, 4)
-        _L(ctx, [(dx - 125 * s, top + 24 * s), (dx - 125 * s, GROUND)], 8, INK)
-        _L(ctx, [(dx + 125 * s, top + 24 * s), (dx + 125 * s, GROUND)], 8, INK)
-        lx = dx - 20 * d * s
-        _R(ctx, lx - 90 * s, top - 6 * s, 180 * s, 12 * s, (0.85, 0.85, 0.85), INK, 6, 3)        # keyboard
-        ctx.save(); ctx.translate(lx + 70 * d * s, top - 6 * s); ctx.rotate(-0.25 * d)
-        _R(ctx, -10 * s if d > 0 else -110 * s, -120 * s, 120 * s, 120 * s, (0.9, 0.97, 0.92), INK, 7, 6)
-        ctx.restore()
+        ctx.rectangle(dx - 160 * s, top, 320 * s, 20 * s); ctx.set_source_rgb(*INK); ctx.fill()  # desk top
+        _L(ctx, [(dx - 135 * s, top), (dx - 135 * s, GROUND)], 10 * s, INK)
+        _L(ctx, [(dx + 135 * s, top), (dx + 135 * s, GROUND)], 10 * s, INK)
+        lx = dx + 10 * d * s
+        _L(ctx, [(lx - 80 * d * s, top - 6 * s), (lx + 40 * d * s, top - 6 * s)], 12 * s, INK)     # laptop base
+        hx2, hy2 = lx + 40 * d * s + 45 * d * s * math.sin(0.35), top - 6 * s - 150 * s * math.cos(0.35)
+        _L(ctx, [(lx + 40 * d * s, top - 6 * s), (hx2, hy2)], 12 * s, INK)                       # open screen
+        ctx.arc(lx + 40 * d * s + (hx2 - lx - 40 * d * s) * 0.4, top - 6 * s + (hy2 - top + 6 * s) * 0.4, 8 * s,
+                0, 2 * math.pi)
+        ctx.set_source_rgb(*GREEN); ctx.fill()
 
 
 def _A(**k):
@@ -541,26 +553,22 @@ def _fx(ctx, name, hx, hy, hands, t, d, s, x):
 
 
 def figure(ctx, x, t, pose="stand", mood="neutral", label="", s=1.0, face_right=True):
-    """Draws one stick figure acting out `pose` on the ground at x. Returns hand positions."""
+    """Draws one stick figure acting out `pose` on the ground at x. Returns hand positions.
+    Look: solid black round head with a white face, straight thick limbs, round fists, green name tag."""
     d = 1 if face_right else -1
     if pose in ("fall", "lie_down"):
         s *= 0.8  # a lying body is long - keep it inside the frame
     a = action(pose, t, d, s)
     mood = a["mood"] or mood
-    head_r = 64 * s                      # bigger oval head, like hand-drawn doodles
+    head_r = 54 * s
     leg, thigh = 150 * s, 150 * s
-    body = 235 * s
+    body = 240 * s
     arm1, arm2 = 112 * s, 108 * s
     bob = math.sin(t * 3.2) * 4 * s
     x = x + a["dx"]
     hip_y = GROUND - (leg + thigh) * 0.97 + bob + a["dy"]
     lean, head_tilt = a["lean"], a["tilt"]
-    if not a["rot"]:
-        _glow(ctx, x, hip_y - body - head_r * 2.2, s, pose, mood)
-    # soft shadow keeps the figure grounded
-    ctx.save(); ctx.translate(x, GROUND + 4); ctx.scale(1, 0.18)
-    ctx.arc(0, 0, 85 * s, 0, 2 * math.pi); ctx.restore()
-    ctx.set_source_rgba(0, 0, 0, 0.10); ctx.fill()
+    _shadow(ctx, x, s)
     ctx.save()
     if a["rot"]:
         k = abs(a["rot"]) / 90
@@ -570,64 +578,59 @@ def figure(ctx, x, t, pose="stand", mood="neutral", label="", s=1.0, face_right=
     neck_x = x + math.sin(math.radians(lean)) * body
     neck_y = hip_y - math.cos(math.radians(lean)) * body
     for a1, a2 in a["legs"]:
-        _limb(ctx, x, hip_y, a1, thigh, a2, leg, "foot", d, s)
-    # torso: one gently bowed marker line
-    bow = 10 * s * d
-    ctx.move_to(x, hip_y)
-    ctx.curve_to(x + bow, hip_y - body * 0.35, neck_x + bow, neck_y + body * 0.35, neck_x, neck_y)
-    stroke(ctx)
+        _limb(ctx, x, hip_y, a1, thigh, a2, leg, None, d, s)
+    ctx.move_to(x, hip_y); ctx.line_to(neck_x, neck_y); stroke(ctx)
     sh_x, sh_y = neck_x + (x - neck_x) * 0.15, neck_y + (hip_y - neck_y) * 0.12
     hands = [_limb(ctx, sh_x, sh_y, a1, arm1, a2, arm2, "hand", d, s) for a1, a2 in a["arms"]]
-    ry = head_r * 1.08
-    hx = neck_x + math.sin(math.radians(lean)) * ry + head_tilt * 0.4 * d
-    hy = neck_y - math.cos(math.radians(lean)) * ry + head_tilt * 0.6
-    ctx.save(); ctx.translate(hx, hy); ctx.rotate(math.radians(head_tilt * 0.3 * d)); ctx.scale(0.9, 1.08)
-    ctx.arc(0, 0, head_r, 0, 2 * math.pi); ctx.restore()
-    ctx.set_source_rgb(1, 1, 1); ctx.fill_preserve(); stroke(ctx, INK, LINE - 1)
+    hx = neck_x + math.sin(math.radians(lean)) * head_r * 0.92 + head_tilt * 0.4 * d
+    hy = neck_y - math.cos(math.radians(lean)) * head_r * 0.92 + head_tilt * 0.6
+    ctx.arc(hx, hy, head_r, 0, 2 * math.pi)
+    ctx.set_source_rgb(*INK); ctx.fill()
     _face(ctx, hx, hy, head_r, mood, d, t)
     for f in a["fx"]:
         _fx(ctx, f, hx, hy, hands, t, d, s, x)
+    tx, ty = ctx.user_to_device(hx, hy)  # where the head really is (a fallen figure is rotated)
     ctx.restore()
     if label:
-        text(ctx, label.upper(), hx, hy - ry - 62 * s, 54 * s, INK, outline=(1, 1, 1))
-        lw = min(len(label), 14) * 15 * s
-        ctx.move_to(hx - lw, hy - ry - 26 * s); ctx.line_to(hx + lw, hy - ry - 26 * s)
-        stroke(ctx, GREEN, 8)
+        tx, ty = ctx.device_to_user(tx, ty)
+        _tag(ctx, label.upper(), tx, ty - (head_r + 26 * s if not a["rot"] else head_r + 20 * s), s)
     return hands
 
 
 def _face(ctx, x, y, r, mood, d, t):
-    ex = r * 0.32
+    """White features on the black head, turned a little toward the facing side."""
+    W_ = (1, 1, 1)
+    ox = d * r * 0.18
+    ex = r * 0.27
     blink = (t % 3.3) < 0.12
     for sx in (-1, 1):
+        cx, cy = x + ox + sx * ex, y - r * 0.12
         if blink:
-            ctx.move_to(x + sx * ex - 7 + d * 6, y - r * 0.1)
-            ctx.line_to(x + sx * ex + 7 + d * 6, y - r * 0.1)
-            stroke(ctx, INK, 5)
+            ctx.move_to(cx - 7, cy); ctx.line_to(cx + 7, cy); stroke(ctx, W_, 4)
         else:
-            ctx.arc(x + sx * ex + d * 6, y - r * 0.1, 7 if mood != "shocked" else 9, 0, 2 * math.pi)
-            ctx.set_source_rgb(*INK)
-            ctx.fill()
-    my = y + r * 0.35
+            ctx.arc(cx, cy, r * (0.13 if mood == "shocked" else 0.1), 0, 2 * math.pi)
+            ctx.set_source_rgb(*W_); ctx.fill()
+    mx, my = x + ox, y + r * 0.34
     if mood == "happy":
-        ctx.arc(x + d * 6, my - 12, r * 0.35, math.radians(25), math.radians(155))
-        stroke(ctx, INK, 6)
-    elif mood in ("sad", "worried"):
-        ctx.arc(x + d * 6, my + 16, r * 0.3, math.radians(205), math.radians(335))
-        stroke(ctx, INK, 6)
+        ctx.arc(mx, my - r * 0.14, r * 0.26, math.radians(20), math.radians(160)); stroke(ctx, W_, 5)
+    elif mood == "sad":
+        ctx.arc(mx, my + r * 0.16, r * 0.22, math.radians(210), math.radians(330)); stroke(ctx, W_, 5)
+    elif mood == "worried":  # wavy nervous mouth
+        ctx.move_to(mx - r * 0.24, my)
+        for i in range(1, 7):
+            ctx.line_to(mx - r * 0.24 + i * r * 0.08, my + (4 if i % 2 else -4))
+        stroke(ctx, W_, 4)
     elif mood == "shocked":
-        ctx.arc(x + d * 6, my, r * 0.16, 0, 2 * math.pi)
-        stroke(ctx, INK, 6)
+        ctx.arc(mx, my, r * 0.14, 0, 2 * math.pi); ctx.set_source_rgb(*W_); ctx.fill()
     else:
-        ctx.move_to(x - r * 0.2 + d * 6, my)
-        ctx.line_to(x + r * 0.2 + d * 6, my)
-        stroke(ctx, INK, 6)
-    if mood in ("angry", "worried"):
+        ctx.move_to(mx - r * 0.2, my); ctx.line_to(mx + r * 0.2, my); stroke(ctx, W_, 5)
+    if mood in ("angry", "worried", "sad"):
         tilt = 1 if mood == "angry" else -1
         for sx in (-1, 1):
-            ctx.move_to(x + sx * ex - 12 + d * 6, y - r * 0.38 - tilt * sx * 6)
-            ctx.line_to(x + sx * ex + 12 + d * 6, y - r * 0.38 + tilt * sx * 6)
-            stroke(ctx, INK, 5)
+            cx = x + ox + sx * ex
+            ctx.move_to(cx - 10, y - r * 0.38 - tilt * sx * 5)
+            ctx.line_to(cx + 10, y - r * 0.38 + tilt * sx * 5)
+            stroke(ctx, W_, 4)
 
 
 # ---------------------------------------------------------------- props
@@ -1096,31 +1099,27 @@ _PROPS = {
 
 
 # ---------------------------------------------------------------- scenes
+
 def _big_text(ctx, s, t, start=0.3):
+    """Big green number/word with a black outline: pops in, holds, then fades away."""
     if not s:
         return
     s = s.upper()
     k = pop(t, start, 0.4)
     if k <= 0:
         return
-    ctx.save()
-    ctx.translate(W / 2, 345)
-    # VFX: soft pulsing light behind the number/word
-    g = cairo.RadialGradient(0, 0, 0, 0, 0, 420)
-    a = 0.38 * min(k, 1.0) * (0.8 + 0.2 * math.sin(t * 5))
-    g.add_color_stop_rgba(0, 1, 0.86, 0.3, a); g.add_color_stop_rgba(1, 1, 0.86, 0.3, 0)
-    ctx.save(); ctx.scale(1.25, 0.6); ctx.arc(0, 0, 420, 0, 2 * math.pi); ctx.restore()
-    ctx.set_source(g); ctx.fill()
+    alpha = 1.0 - min(max((t - start - 2.2) / 0.5, 0.0), 1.0)
+    if alpha <= 0:
+        return
+    size = 150 if len(s) <= 6 else 120 if len(s) <= 9 else 96
+    ctx.push_group()
+    ctx.translate(W / 2, 330)
     ctx.scale(k, k)
-    ctx.rotate(math.radians(-3))
-    size = 170 if len(s) <= 6 else 135 if len(s) <= 9 else 105
-    ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-    ctx.set_font_size(size)
-    ew = ctx.text_extents(s).width
-    rrect(ctx, -ew / 2 - 40, -size * 0.62, ew + 80, size * 1.24, 24)
-    fill_stroke(ctx, GREEN, INK, 10)
-    text(ctx, s, 0, 0, size, (1, 1, 1), outline=INK)
-    ctx.restore()
+    ctx.set_source_rgba(0, 0, 0, 0.18)
+    text(ctx, s, 6, 8, size, (0.55, 0.55, 0.55))            # soft drop shadow
+    text(ctx, s, 0, 0, size, GREEN, outline=INK)
+    ctx.pop_group_to_source()
+    ctx.paint_with_alpha(alpha)
 
 
 def _wrap(ctx, s, size, max_w):
@@ -1167,10 +1166,13 @@ def _headline(ctx, s, t, start=0.2):
     ctx.restore()
 
 
+
 def _ground(ctx):
-    ctx.move_to(70, GROUND + 4)
-    ctx.line_to(W - 70, GROUND + 4)
-    stroke(ctx, (0.85, 0.85, 0.87), 6)
+    """Light grey floor band under a thin dark ground line."""
+    ctx.rectangle(-200, GROUND, W + 400, H - GROUND + 200)
+    ctx.set_source_rgb(0.965, 0.965, 0.97); ctx.fill()
+    ctx.move_to(-200, GROUND); ctx.line_to(W + 200, GROUND)
+    stroke(ctx, (0.25, 0.25, 0.27), 4)
 
 
 def _brand(ctx):
@@ -1192,6 +1194,11 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
     _camera(ctx, scene.get("_cam", "push"), t, scene.get("_seed", 0))
     draw_place(ctx, scene.get("_place", "none"), t)
     _ground(ctx)
+    if scene.get("_place") == "street":  # road lane
+        for i in range(-2, 14):
+            x0 = i * 110 - (t * 20) % 110
+            ctx.move_to(x0, GROUND + 120); ctx.line_to(x0 + 55, GROUND + 120)
+        stroke(ctx, (0.84, 0.84, 0.86), 8)
     chars = [c for c in scene.get("characters", []) if c.get("pose")][:3]
     p = scene.get("prop", "none") or "none"
     has_prop = p != "none"
@@ -1202,15 +1209,16 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
     elif n == 1:
         jx = (scene.get("_seed", 0) % 101 - 50)
         cx = (320 if has_prop else W / 2) + jx
-        sc1 = 1.08 + (scene.get("_seed", 0) % 7) * 0.012
+        sc1 = 0.8 + (scene.get("_seed", 0) % 7) * 0.01
         fr = True if has_prop else bool(scene.get("_seed", 0) % 2)
         _enter(ctx, t, lambda: figure(ctx, cx, t, chars[0]["pose"], chars[0].get("mood", "neutral"),
                                       chars[0].get("label", ""), sc1, fr))
         if has_prop:
             prop(ctx, p, 785, GROUND - 300, t, 1.0)
+        anchor = cx
     else:
         xs = [290, 790] if n == 2 else [200, 540, 880]
-        sc = 1.0 if n == 2 else 0.82
+        sc = 0.76 if n == 2 else 0.64
         for i, c in enumerate(chars):
             face_right = xs[i] < W / 2
             _enter(ctx, t - i * 0.08, lambda c=c, x=xs[i], fr=face_right: figure(
@@ -1220,16 +1228,19 @@ def draw_scene(ctx, scene: dict, t: float, idx: int):
                 prop(ctx, p, W / 2, GROUND - 230, t, 0.62)
             elif not scene.get("big_text"):
                 prop(ctx, p, W / 2, 470, t, 0.55)
+        anchor = xs[0]
+    if n:
+        _floaters(ctx, {c["pose"] for c in chars}, p, anchor, t, scene.get("_seed", 0))
     ctx.restore()
-    if {c["pose"] for c in chars} & _PARTY:
+    if {c["pose"] for c in chars} & _PARTY or p in ("chart_up", "trophy", "rocket"):
         _confetti(ctx, t, scene.get("_seed", 0))
     if scene.get("headline"):
         _headline(ctx, scene["headline"], t, 2.7 if idx == 0 else 0.2)
     else:
         _big_text(ctx, scene.get("big_text", ""), t, 2.7 if idx == 0 else 0.3)
     _brand(ctx)
-    if scene.get("_flash") and t < 0.22:  # VFX: light flash on reveals
-        ctx.set_source_rgba(1, 1, 0.94, 0.75 * (1 - t / 0.22))
+    if idx > 0 and t < 0.28:  # transition: the new scene fades in from white
+        ctx.set_source_rgba(1, 1, 1, 0.9 * (1 - ease_out(t / 0.28)))
         ctx.paint()
 
 
@@ -1238,22 +1249,50 @@ _CONF = [(0.13, 0.77, 0.37), (1, 0.82, 0.2), (0.93, 0.27, 0.27), (0.3, 0.55, 0.9
 
 
 def _confetti(ctx, t, seed):
-    """VFX: a burst of confetti that rains down when someone celebrates."""
+    """VFX: little green and black dashes drifting down when something good happens."""
     import random
     r = random.Random(seed)
-    for i in range(38):
-        x0, vx = r.uniform(80, W - 80), r.uniform(-120, 120)
-        delay, spin = r.uniform(0, 0.5), r.uniform(-8, 8)
-        tt = t - delay
-        if tt <= 0:
+    for i in range(46):
+        x0, y0 = r.uniform(0, W), r.uniform(-200, 900)
+        sp, spin, ph = r.uniform(60, 140), r.uniform(-3, 3), r.uniform(0, 6.3)
+        y = y0 + t * sp
+        if y > GROUND - 40:
             continue
-        y = 180 + tt * 330 - 260 * math.exp(-tt * 4)
-        if y > GROUND:
-            continue
-        ctx.save(); ctx.translate(x0 + vx * tt + math.sin(tt * 4 + i) * 25, y); ctx.rotate(spin * tt)
-        ctx.scale(1, abs(math.cos(tt * 6 + i)) + 0.15)
-        ctx.rectangle(-11, -6, 22, 12)
-        ctx.set_source_rgb(*_CONF[i % 4]); ctx.fill()
+        a = min(t / 0.4, 1.0)
+        ctx.save(); ctx.translate(x0 + math.sin(t * 1.5 + ph) * 18, y); ctx.rotate(ph + spin * t)
+        ctx.move_to(-8, 0); ctx.line_to(8, 0)
+        col = GREEN if i % 3 else INK
+        ctx.set_source_rgba(*col, a); ctx.set_line_width(5); ctx.set_line_cap(cairo.LINE_CAP_ROUND); ctx.stroke()
+        ctx.restore()
+
+
+_MONEY_POSES = {"count_money", "fly_money", "throw_money", "give", "lift"}
+_MONEY_PROPS = {"money_bag", "coins", "cash", "piggy_bank", "bank"}
+_TECH = {"type", "phone"}
+
+
+def _floaters(ctx, poses, prop_name, x, t, seed):
+    """VFX: small green symbols rising and fading beside the character ($ for money, code for tech)."""
+    if poses & _MONEY_POSES or prop_name in _MONEY_PROPS:
+        syms = ["$", "$", "$"]
+    elif poses & _TECH or prop_name in ("laptop", "phone"):
+        syms = ["{ }", "</>", "01"]
+    else:
+        return
+    side = 1 if x < W / 2 else -1
+    for i, sy in enumerate(syms):
+        k = ((t * 0.55 + i / len(syms)) % 1.0)
+        a = math.sin(math.pi * k)
+        px = x + side * (120 + 45 * i + 15 * math.sin(t * 2 + i))
+        py = GROUND - 520 - k * 240
+        ctx.save()
+        ctx.select_font_face(FONT, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        ctx.set_font_size(46 if sy == "$" else 40)
+        e = ctx.text_extents(sy)
+        ctx.move_to(px - e.width / 2, py)
+        ctx.set_source_rgba(*GREEN, a)
+        ctx.show_text(sy)
+        ctx.new_path()
         ctx.restore()
 
 

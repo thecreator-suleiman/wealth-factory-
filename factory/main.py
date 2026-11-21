@@ -15,7 +15,7 @@ from .notify import advice, report, send_text, send_video, send_whatsapp, share_
 from .publish import host_video, post_everywhere, posting_enabled
 from .script import write_freebie, write_story
 from . import stickman
-from .video import FONT_DIR, finish_video
+from .video import FONT_DIR, _font, finish_video
 from .voice import fit_pace, make_voice
 
 HISTORY = DATA / "history.json"
@@ -149,7 +149,7 @@ def run() -> int:
                                        cfg["video"].get("min_seconds", 61), cfg["video"].get("max_seconds", 70))
 
         step = "drawing the stickman scenes"
-        stickman.set_font("Anton" if (FONT_DIR / "Anton-Regular.ttf").exists() else "DejaVu Sans")
+        stickman.set_font(_font()[0])
         times = beat_times(story["beats"], words, total)
         tail = 0.35  # no end card: the video ends on the payoff and loops straight back into the hook
         times[-1] = (times[-1][0], total + tail)

@@ -16,7 +16,9 @@ GREEN_HEX = "0x16A34A"
 
 
 def _font() -> tuple[str, int]:
-    """Anton (downloaded by the workflow) looks best; DejaVu Sans Bold is the safe fallback."""
+    """Archivo Black (chunky, like the reference style) > Anton > DejaVu Sans Bold (safe fallback)."""
+    if (FONT_DIR / "ArchivoBlack-Regular.ttf").exists():
+        return "Archivo Black", 0
     if (FONT_DIR / "Anton-Regular.ttf").exists():
         return "Anton", 0
     return "DejaVu Sans", -1
@@ -39,7 +41,7 @@ def _chunks(words: list[tuple[float, float, str]]) -> list[tuple[float, float, s
     for w in words:
         cur.append(w)
         text = " ".join(x[2] for x in cur)
-        if len(cur) >= 3 or len(text) >= 14 or re.search(r"[.,!?;:]$", w[2]):
+        if len(cur) >= 2 or len(text) >= 9 or re.search(r"[.,!?;:]$", w[2]):
             out.append((cur[0][0], cur[-1][1], text))
             cur = []
     if cur:
@@ -47,9 +49,18 @@ def _chunks(words: list[tuple[float, float, str]]) -> list[tuple[float, float, s
     return out
 
 
+def _two_lines(s: str) -> str:
+    """Title banner on two balanced lines, like a news strap."""
+    w = s.split()
+    if len(s) <= 16 or len(w) < 2:
+        return s
+    best = min(range(1, len(w)), key=lambda i: abs(len(" ".join(w[:i])) - len(" ".join(w[i:]))))
+    return " ".join(w[:best]) + "\\N" + " ".join(w[best:])
+
+
 def write_captions(words: list, hook: str, total: float, path: Path, w: int, h: int) -> None:
     font, bold = _font()
-    size = 128 if font == "Anton" else 96
+    size = {"Archivo Black": 104, "Anton": 128}.get(font, 96)
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {w}
@@ -59,8 +70,8 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Cap,{font},{size},{BLACK},{BLACK},{WHITE},&H00000000,{bold},0,0,0,100,100,2,0,1,10,0,5,60,60,0,1
-Style: Hook,{font},{size + 40},{WHITE},{WHITE},{GREEN},&H00000000,{bold},0,0,0,100,100,2,0,3,22,0,5,60,60,0,1
+Style: Cap,{font},{size},{WHITE},{WHITE},{BLACK},&H64000000,{bold},0,0,0,100,100,2,0,1,9,5,5,60,60,0,1
+Style: Hook,{font},{int(size * 0.82)},{WHITE},{WHITE},{GREEN},&H00000000,{bold},0,0,0,100,100,1,0,3,14,0,5,90,90,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -68,9 +79,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     lines = []
     if hook:
         lines.append(
-            f"Dialogue: 1,{_ts(0)},{_ts(2.6)},Hook,,0,0,0,,"
-            f"{{\\pos({w // 2},{int(h * 0.19)})\\fad(0,200)\\fscx112\\fscy112\\t(0,180,\\fscx100\\fscy100)}}"
-            f"{_esc(hook.upper())}"
+            f"Dialogue: 1,{_ts(0)},{_ts(4.0)},Hook,,0,0,0,,"
+            f"{{\\pos({w // 2},{int(h * 0.105)})\\fad(0,300)}}"
+            f"{_two_lines(_esc(hook.upper()))}"
         )
     chunks = _chunks(words)
     for i, (start, end, text) in enumerate(chunks):
@@ -80,12 +91,12 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         for word in text.split():
             clean = _esc(word.upper())
             if re.search(r"\d|\$|%", word):  # numbers pop in green
-                styled.append(f"{{\\c{GREEN}}}{clean}{{\\c{BLACK}}}")
+                styled.append(f"{{\\c{GREEN}}}{clean}{{\\c{WHITE}}}")
             else:
                 styled.append(clean)
         lines.append(
             f"Dialogue: 0,{_ts(start)},{_ts(end)},Cap,,0,0,0,,"
-            f"{{\\pos({w // 2},{int(h * 0.80)})\\fscx80\\fscy80\\t(0,90,\\fscx100\\fscy100)}}"
+            f"{{\\pos({w // 2},{int(h * 0.735)})\\fscx85\\fscy85\\t(0,80,\\fscx100\\fscy100)}}"
             + " ".join(styled)
         )
     path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")

@@ -55,6 +55,12 @@ jobs:
           else
             echo "Font download failed - using backup font"; rm -f work/fonts/Anton-Regular.ttf
           fi
+          if curl -fsSL -o work/fonts/ArchivoBlack-Regular.ttf \
+               https://github.com/google/fonts/raw/main/ofl/archivoblack/ArchivoBlack-Regular.ttf; then
+            cp work/fonts/ArchivoBlack-Regular.ttf ~/.local/share/fonts/ && fc-cache -f > /dev/null
+          else
+            echo "Archivo Black download failed - using Anton"; rm -f work/fonts/ArchivoBlack-Regular.ttf
+          fi
 
       - name: Make and post the video
         env:
