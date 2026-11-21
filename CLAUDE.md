@@ -37,7 +37,12 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    retention formula). Voice clone (OmniVoice): REJECTED - model weights are CC-BY-NC (non-commercial; Monezic
    is monetised) + audio tokenizer under Boson Higgs licence. Keep Andrew. Owner's own recordings are fine.
 2. Channel trailer: made from take 2 of owner's recording (0:51-1:30, no stumbles), 43 s incl. end card.
-   Sent for approval 21 Nov - NOT published. Recording is NOT in the repo (privacy).
+   APPROVED 21 Nov. Scheduled YouTube-only via Buffer for Sun 22 Nov 12:00 UTC (14:00 Kigali), post
+   6b013ab25e993799d8589f92. File: media branch trailer/monezic_trailer.mp4. Tool: workflow trailer.yml +
+   factory/trailer_post.py; extra uploads logged in data/youtube_extra.json; main.py skips YouTube if
+   >=2 uploads in last 24.5 h (Mon 02:00 slot may skip YouTube because of the trailer - expected).
+2b. Owner wants renderer upgraded to match a SAMPLE VIDEO's animation style (not received yet - ask to re-attach).
+   Show frames side by side + short test video BEFORE going live.
 3. Sun 22 Nov: compare growth test (history.json "variant") with owner's YouTube Studio screenshots
    (Viewed vs swiped away; start: 39% stayed). Keep the winner.
 4. Next week: weekly long YouTube video (6-10 min, hand-drawn whiteboard style, ideally owner's voice).
