@@ -17,7 +17,7 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
   hook formulas rotate, no end card (ends on payoff, 0.35s tail), backup-run guard (skip if posted <5h ago).
 - factory/script.py - Gemini writer (auto model discovery + 404 replacement learning), Groq backup writer
   (GROQ_API_KEY), retention formula prompt (paradox hook, "Wait,...?", "You see,", payoff last, loop ending,
-  ~2.95 w/s = 176-198 words - owner said 3.7 w/s was too fast to follow), _better_hook() (6 alternative
+  ~2.5 w/s = 150-172 words - owner 21 Nov: 2.95 w/s still too fast), _better_hook() (6 alternative
   first lines from Gemini, hook scorer keeps the best), trending_names() (Gemini search, 1 call/run), _problems hard + SOFT issues
   (soft = hook score/title/formula beats; accepted from try 3), _guarantee_shape (opener; question + FOLLOW/OFFER
   on the LESSON beat; payoff is last; Part 1 adds "Part 2 is next" line).
@@ -30,8 +30,8 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
   chair / black desk+laptop, light outline places (clouds, road lane, clock, plant), figures ~0.8 scale.
   VFX: zoom punch on numbers, dash confetti, floating $ / code symbols, big green text fades out,
   scenes fade in from white. Captions + top banner: Archivo Black (video.py), white caps, green banner.
-- factory/voice.py - edge-tts Andrew Multilingual (main, rate +12%), Andrew Neural, then Kokoro am_michael backup.
-  Never female. fit_pace() -> ~2.95 words/s (config words_per_second), 61-70 s (>60 s for TikTok rewards).
+- factory/voice.py - edge-tts Andrew Multilingual (main, rate +4%), Andrew Neural, then Kokoro am_michael backup.
+  Never female. fit_pace() -> ~2.5 words/s (config words_per_second), 61-70 s (>60 s for TikTok rewards).
 - factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
 - .github/workflows/factory.yml - crons 10:50/22:50 UTC (70 min early) + backups 12:45/00:45; inputs post, test_backup.

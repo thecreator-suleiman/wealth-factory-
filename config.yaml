@@ -31,7 +31,7 @@ channel:
 video:
   target_seconds: 64        # retention formula: 55-70 s (TikTok pays for 60s+)
   min_seconds: 61            # stay above 60 s (TikTok rewards)
-  max_seconds: 70
+  max_seconds: 78
   width: 1080
   height: 1920
   fps: 30
@@ -39,8 +39,8 @@ video:
 voice:
   main: "en-US-AndrewMultilingualNeural"   # calm, natural storyteller (free Microsoft neural voice)
   backup: "en-US-AndrewNeural"
-  rate: "+12%"                    # clear storyteller pace (owner: +35% was too fast to follow)
-  words_per_second: 2.95          # final pace: easy to catch for non-native listeners
+  rate: "+4%"                     # calm storyteller pace (owner 21 Nov: +12% / 2.95 w/s too fast)
+  words_per_second: 2.5           # owner 21 Nov: slower, like the first videos
   pitch: "-2Hz"                   # a little deeper
 
 music:

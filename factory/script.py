@@ -100,7 +100,7 @@ STRUCTURES = [
 ]
 
 
-WPS_LO, WPS_HI = 2.75, 3.1          # spoken words per second (owner: clear pace, ~2.95)
+WPS_LO, WPS_HI = 2.35, 2.7          # spoken words per second (owner 21 Nov: slower, ~2.5)
 
 LOOP = ("\n   LOOP ENDING: write the payoff so its last words flow straight back into the HOOK when the short "
         "replays\n   (last line + beat 1 read as one sentence), e.g. payoff \"...and that's exactly why\" -> hook "
