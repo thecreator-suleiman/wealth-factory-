@@ -1,6 +1,8 @@
 name: Buffer audit (read-only)
 
 on:
+  schedule:
+    - cron: "30 15 * * *"   # daily 17:30 Kigali - Telegram message ONLY if something went wrong
   workflow_dispatch:
     inputs:
       days:
@@ -23,5 +25,7 @@ jobs:
       - name: List posts per channel
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
-          DAYS: ${{ inputs.days }}
+          DAYS: ${{ inputs.days || '1' }}
+          ALERT: ${{ github.event_name == 'schedule' }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: python tools/buffer_audit.py

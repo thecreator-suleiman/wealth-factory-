@@ -32,8 +32,11 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
   scenes fade in from white. Captions + top banner: Archivo Black (video.py), white caps, green banner.
 - factory/voice.py - edge-tts Andrew Multilingual (main, rate +4%), Andrew Neural, then Kokoro am_michael backup.
   Never female. fit_pace() -> ~2.5 words/s (config words_per_second), 61-70 s (>60 s for TikTok rewards).
-- factory/video.py captions/music; publish.py Buffer; notify.py Telegram/WhatsApp + advice() + share_messages().
+- factory/video.py captions/music; publish.py Buffer (_existing(): never posts the same text twice on a channel
+  within 3 h - fixes 23 Nov TikTok double post after a slow Buffer reply + retry); notify.py Telegram/WhatsApp + advice() + share_messages().
 - factory/health.py + .github/workflows/health.yml - Sunday weekly report.
+- tools/buffer_audit.py + buffer_audit.yml - daily 17:30 Kigali: lists Buffer posts, Telegram alert ONLY if a
+  duplicate or failed post (manual run = print only). trailer.yml can also push ONE made video to YouTube.
 - .github/workflows/factory.yml - crons 10:50/22:50 UTC (70 min early) + backups 12:45/00:45; inputs post, test_backup.
 
 ## Pending (do in order)
@@ -44,7 +47,8 @@ Claude is NOT used by the pipeline - only for fixes/upgrades.
    APPROVED 21 Nov. Scheduled YouTube-only via Buffer for Sun 22 Nov 12:00 UTC (14:00 Kigali), post
    6b013ab25e993799d8589f92. File: media branch trailer/monezic_trailer.mp4. Tool: workflow trailer.yml +
    factory/trailer_post.py; extra uploads logged in data/youtube_extra.json; main.py skips YouTube if
-   >=2 uploads in last 24.5 h (Mon 02:00 slot may skip YouTube because of the trailer - expected).
+   >=2 uploads in last 26 h (uses posted_at = real upload time). 23 Nov: 02:00 YouTube refused (trailer + guard
+   bug, fixed); 14:00 Bezos video sent to YouTube by hand.
 2b. DONE 21 Nov: renderer matched to owner's sample video (approved, merged from branch sample-style).
 3. Sun 22 Nov: compare old growth test (history.json "variant" stop/* vs fact/*) with owner's YouTube Studio
    screenshots (Viewed vs swiped away; start: 39% stayed). Hook-first is already live (owner's call).

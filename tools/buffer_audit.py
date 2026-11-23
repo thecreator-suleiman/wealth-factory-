@@ -16,6 +16,7 @@ Q = """query($o: OrganizationId!, $c: [ChannelId!], $s: [PostStatus!]) {
 
 
 def main():
+    problems = []
     since = datetime.now(timezone.utc) - timedelta(days=DAYS)
     orgs = _gql("query { account { organizations { id name } } }")["account"]["organizations"]
     for org in orgs:
@@ -40,9 +41,18 @@ def main():
                     err = (n.get("error") or {}).get("message", "")
                     print(f"  {n['status']:9} sent {n.get('sentAt') or '-':24} created {n['createdAt'][:16]}  "
                           f"{first}  {n.get('externalLink') or ''} {err[:60]}")
+                    if status == ["error"] and when > datetime.now(timezone.utc) - timedelta(hours=26):
+                        problems.append(f"{ch['service']}: not posted - {first[:40]}... ({err[:70]})")
                 for first, ns in seen.items():
                     if len(ns) > 1:
                         print(f"  !! DUPLICATE x{len(ns)}: {first}  ids {[x['id'] for x in ns]}")
+                        if first.strip() and status == ["sent"]:  # empty text = Instagram stories, not ours
+                            problems.append(f"{ch['service']}: posted {len(ns)} times - {first[:40]}...")
+    if problems and os.environ.get("ALERT") == "true":
+        from factory.common import load_config
+        from factory.notify import send_text
+        send_text(load_config(), "Monezic daily check - needs a look:\n- " + "\n- ".join(problems))
+    print("\nProblems:", problems or "none")
 
 
 if __name__ == "__main__":

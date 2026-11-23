@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -95,8 +96,30 @@ def _channels() -> dict:
         )["channels"]
         for c in chans:
             if c["service"] not in found and not c["isLocked"]:
-                found[c["service"]] = c
+                found[c["service"]] = dict(c, org=org["id"])
     return found
+
+
+RECENT = """query($o: OrganizationId!, $c: [ChannelId!]) {
+  posts(input: {organizationId: $o, sort: [{field: createdAt, direction: desc}], filter: {channelIds: $c}}, first: 10) {
+    edges { node { id text createdAt status } } } }"""
+
+
+def _existing(ch: dict, text: str, minutes: int = 180) -> str | None:
+    """Id of a post with the same text already created on this channel recently (so we never post twice -
+    e.g. when Buffer answered too slowly but did create the post)."""
+    try:
+        edges = _gql(RECENT, {"o": ch["org"], "c": [ch["id"]]})["posts"]["edges"]
+    except Exception as e:  # noqa: BLE001
+        log(f"Duplicate check unavailable for {ch['service']}: {e}")
+        return None
+    since = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+    for e in edges:
+        n = e["node"]
+        made = datetime.fromisoformat(n["createdAt"].replace("Z", "+00:00"))
+        if made >= since and (n.get("text") or "").strip()[:120] == text.strip()[:120] and n["status"] != "error":
+            return n["id"]
+    return None
 
 
 CREATE = """mutation($input: CreatePostInput!) {
@@ -161,6 +184,11 @@ def post_everywhere(cfg: dict, story: dict, video_url: str) -> dict:
             "assets": [{"video": {"url": video_url, "metadata": {"thumbnailOffset": 500}}}],
             "metadata": _metadata(service, story, cfg),
         }
+        old = _existing(ch, text)
+        if old:
+            pending[service] = old
+            log(f"{service}: this video is already in Buffer - checking it instead of posting again")
+            continue
         try:
             res = _gql(CREATE, {"input": post_input})["createPost"]
             if res.get("__typename") == "PostActionSuccess":
@@ -169,7 +197,14 @@ def post_everywhere(cfg: dict, story: dict, video_url: str) -> dict:
             else:
                 results[service] = {"ok": False, "link": "", "error": res.get("message", res.get("__typename"))}
         except Exception as e:  # noqa: BLE001
-            results[service] = {"ok": False, "link": "", "error": str(e)}
+            log(f"Buffer did not answer clearly for {service} ({e}) - checking whether the post was made")
+            time.sleep(20)
+            old = _existing(ch, text, minutes=15)
+            if old:
+                pending[service] = old
+                log(f"{service}: Buffer did create it - waiting for it instead of posting again")
+            else:
+                results[service] = {"ok": False, "link": "", "error": str(e)}
 
     # Wait for the platforms to confirm (videos take a few minutes to process).
     deadline = time.time() + 15 * 60
