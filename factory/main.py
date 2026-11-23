@@ -198,7 +198,7 @@ def run() -> int:
                 log("Day slot: posting to TikTok + Instagram only (YouTube gets the 02:00 video).")
             if "youtube" in cfg["posting"]["platforms"]:
                 from .trailer_post import youtube_uploads
-                recent = youtube_uploads(datetime.now(timezone.utc), hours=24.5)  # history = run start times
+                recent = youtube_uploads(datetime.now(timezone.utc), hours=26)  # YouTube's window is ~24 h; 2 h margin
                 if len(recent) >= 2:
                     cfg["posting"]["platforms"] = [p for p in cfg["posting"]["platforms"] if p != "youtube"]
                     log(f"YouTube already has {len(recent)} uploads in the last 24 h (e.g. the trailer) - skipping it.")
@@ -233,6 +233,7 @@ def run() -> int:
                 "voice": voice_name,
                 "variant": f"{opening}/{length}",
                 "part": part,
+                "posted_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
                 "trending": story.get("_trending") or cfg.get("_trending") or [],
                 "script": story["script"] if part == 1 else "",
                 "seconds": round(total, 1),

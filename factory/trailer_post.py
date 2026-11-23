@@ -25,7 +25,9 @@ def youtube_uploads(before: datetime, hours: float = 24) -> list[datetime]:
     out = []
     for h in read_json(DATA / "history.json", []):
         if (h.get("results") or {}).get("youtube", {}).get("ok"):
-            out.append(datetime.fromisoformat(h["date"]))
+            # real upload time; older entries only have the run start (uploads happen up to ~70 min later)
+            out.append(datetime.fromisoformat(h["posted_at"]) if h.get("posted_at")
+                       else datetime.fromisoformat(h["date"]) + timedelta(minutes=70))
     for x in read_json(DATA / "youtube_extra.json", []):
         out.append(datetime.fromisoformat(x["date"]))
     return sorted(t for t in out if before - timedelta(hours=hours) < t < before)
