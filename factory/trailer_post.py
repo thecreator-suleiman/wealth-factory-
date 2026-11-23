@@ -49,7 +49,12 @@ def main() -> int:
     if any(timedelta(0) <= due - u < timedelta(hours=12) for u in ups):
         log("Refusing: a YouTube upload is less than 12 h before the trailer slot.")
         return 1
-    url = VIDEO.format(repo=os.environ["GITHUB_REPOSITORY"])
+    # also used to send one already-made video to YouTube (inputs video_url / title)
+    url = os.environ.get("VIDEO_URL") or VIDEO.format(repo=os.environ["GITHUB_REPOSITORY"])
+    title = os.environ.get("TITLE") or TITLE
+    text = (f"{title}\n\nReal money stories and the lesson inside them. Follow Monezic for the next one.\n\n"
+            "#money #business #shorts #monezic") if os.environ.get("TITLE") else TEXT
+    what = "manual YouTube upload" if os.environ.get("VIDEO_URL") else "channel trailer"
     if requests.head(url, timeout=30).status_code != 200:
         log(f"Trailer file not reachable: {url}")
         return 1
@@ -58,19 +63,19 @@ def main() -> int:
     if not ch or ch.get("isDisconnected"):
         log("YouTube is not connected in Buffer.")
         return 1
-    meta = _metadata("youtube", {"title": TITLE}, cfg)
+    meta = _metadata("youtube", {"title": title}, cfg)
     res = _gql(CREATE, {"input": {
-        "channelId": ch["id"], "text": TEXT, "mode": "customScheduled", "schedulingType": "automatic",
+        "channelId": ch["id"], "text": text, "mode": "customScheduled", "schedulingType": "automatic",
         "dueAt": due.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
         "assets": [{"video": {"url": url, "metadata": {"thumbnailOffset": 500}}}],
         "metadata": meta}})["createPost"]
     if res.get("__typename") != "PostActionSuccess":
         log(f"Buffer refused: {res.get('message', res)}")
         return 1
-    log(f"Trailer scheduled on YouTube for {due:%Y-%m-%d %H:%M} UTC (Buffer post {res['post']['id']}, "
+    log(f"{what} scheduled on YouTube for {due:%Y-%m-%d %H:%M} UTC (Buffer post {res['post']['id']}, "
         f"status {res['post']['status']})")
     extra = read_json(DATA / "youtube_extra.json", [])
-    extra.append({"date": due.isoformat(timespec="minutes"), "what": "channel trailer", "buffer_id": res["post"]["id"]})
+    extra.append({"date": due.isoformat(timespec="minutes"), "what": what, "buffer_id": res["post"]["id"]})
     write_json(DATA / "youtube_extra.json", extra)
     return 0
 

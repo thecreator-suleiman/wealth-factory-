@@ -1,4 +1,4 @@
-name: Schedule channel trailer (YouTube only)
+name: Schedule a YouTube-only upload (trailer or one video)
 
 on:
   workflow_dispatch:
@@ -6,6 +6,14 @@ on:
       due_at:
         description: "UTC time, e.g. 2026-11-22T12:00:00Z (= 14:00 Kigali)"
         required: true
+      video_url:
+        description: "Optional: an already-made video URL to send to YouTube instead of the trailer"
+        required: false
+        default: ""
+      title:
+        description: "YouTube title for video_url"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -29,6 +37,8 @@ jobs:
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           DUE_AT: ${{ inputs.due_at }}
+          VIDEO_URL: ${{ inputs.video_url }}
+          TITLE: ${{ inputs.title }}
         run: python -m factory.trailer_post
       - name: Remember the extra YouTube upload
         run: |
