@@ -537,5 +537,42 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-23T11:39+00:00",
+    "topic": "Jeff Bezos and the Amazon Garage",
+    "title": "Bezos Built Amazon From His Garage. Then He Almost Quit.",
+    "format": "Behind the success",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-23T12:09+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 69.6,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261123-1139.mp4",
+    "results": {
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7711337270661418260",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgFVOPYjIdL/",
+        "error": ""
+      }
+    }
   }
 ]
