@@ -496,5 +496,46 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-22T23:27+00:00",
+    "topic": "AI's impact on inflation and consumer costs",
+    "title": "AI is making everything more expensive",
+    "format": "Money news",
+    "kind": "news",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 70.8,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261122-2327.mp4",
+    "results": {
+      "youtube": {
+        "ok": false,
+        "link": "",
+        "error": "The daily posting limit for this channel has been reached! Please try reducing the amount of times per day in your schedule and try again later."
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7711149993737932052",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgEC1LOikSP/",
+        "error": ""
+      }
+    }
   }
 ]
