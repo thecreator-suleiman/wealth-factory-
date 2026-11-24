@@ -616,5 +616,42 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-24T11:43+00:00",
+    "topic": "Blinkx founder Suranga Chandratillake",
+    "title": "Blinkx: The $1 Billion Search Engine That Vanished",
+    "format": "Rise and fall",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-24T12:02+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 78.0,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261124-1143.mp4",
+    "results": {
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgH59-qkW9m/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7711706299435797766",
+        "error": ""
+      }
+    }
   }
 ]
