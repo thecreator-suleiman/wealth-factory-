@@ -653,5 +653,47 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-24T23:35+00:00",
+    "topic": "How to Start a Business Under $200",
+    "title": "Start a Business This Month For Under $200",
+    "format": "Business you can start",
+    "kind": "business",
+    "plan": "https://thecreator-suleiman.github.io/wealth-factory-/plans/20261124-2335.html",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-25T00:03+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 76.1,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261124-2335.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=VUXBfWNTIWs",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7711892418169244936",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgJMjVyD32n/",
+        "error": ""
+      }
+    }
   }
 ]
