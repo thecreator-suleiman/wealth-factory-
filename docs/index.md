@@ -7,6 +7,7 @@ title: Free Plans
 Practical, free plans from our videos. New ones every week.
 
 <!-- list -->
+- [Free guide: Aliko Dangote's cement business strategy](plans/20261126-1144.html)
 - [Free business plan: How to Start a Business Under $200](plans/20261124-2335.html)
 - [Free business plan: Blockbuster's CEO turned down Netflix deal](plans/20261123-2335.html)
 - [Free guide: Anthropic AI staff IPO millions](plans/20261121-1341.html)
