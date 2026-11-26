@@ -732,5 +732,47 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-25T23:35+00:00",
+    "topic": "Steve Jobs and NeXT Computers",
+    "title": "Steve Jobs Lost $3B For This One Mistake",
+    "format": "From nothing",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewMultilingualNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-26T00:02+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 70.8,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261125-2335.mp4",
+    "results": {
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=JWMpwKCSIsk",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgLxL8GOe6A/",
+        "error": ""
+      },
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7712263280173059334",
+        "error": ""
+      }
+    }
   }
 ]
