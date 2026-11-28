@@ -932,5 +932,42 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-28T11:36+00:00",
+    "topic": "Nvidia founder Jensen Huang's early struggles",
+    "title": "Nvidia Had $0. Then $10M. Then Almost Nothing.",
+    "format": "Behind the success",
+    "kind": "story",
+    "plan": "",
+    "voice": "en-US-AndrewNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-28T12:02+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 72.6,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261128-1136.mp4",
+    "results": {
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7713190948959800594",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgSNN1jpkDu/",
+        "error": ""
+      }
+    }
   }
 ]
