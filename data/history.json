@@ -890,5 +890,47 @@
         "error": ""
       }
     }
+  },
+  {
+    "date": "2026-11-27T23:38+00:00",
+    "topic": "AI stock market volatility",
+    "title": "AI Stocks Jumped 5.5% on Jensen Huang's Return",
+    "format": "Money news",
+    "kind": "news",
+    "plan": "",
+    "voice": "en-US-AndrewNeural",
+    "variant": "hook/fast",
+    "part": 0,
+    "posted_at": "2026-11-28T00:01+00:00",
+    "trending": [
+      "Anthropic - AI advancements and potential IPO valuation.",
+      "Microsoft - Outlook outage and AI integration in Windows Server.",
+      "Nvidia - Leadership changes and market impact.",
+      "Satya Nadella - Discussing AI and Microsoft's recent outage.",
+      "Chipverse - Egyptian AI infrastructure startup raises pre-seed funding.",
+      "Khaime - Nigerian AI startup raises pre-seed funding.",
+      "Journify - Moroccan startup driving AI innovation and growth.",
+      "MNT-Halan - Egyptian company doubles profit and raises IPO funds."
+    ],
+    "script": "",
+    "seconds": 61.2,
+    "video": "https://raw.githubusercontent.com/thecreator-suleiman/wealth-factory-/media/videos/20261127-2338.mp4",
+    "results": {
+      "tiktok": {
+        "ok": true,
+        "link": "https://tiktok.com/@monezic_/video/7713005423376370951",
+        "error": ""
+      },
+      "youtube": {
+        "ok": true,
+        "link": "https://www.youtube.com/watch?v=Zw28zP1KwaA",
+        "error": ""
+      },
+      "instagram": {
+        "ok": true,
+        "link": "https://www.instagram.com/reel/DgQ6vfYBuZ3/",
+        "error": ""
+      }
+    }
   }
 ]
